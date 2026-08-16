@@ -1,0 +1,27 @@
+.container{
+
+width:min(100%,var(--container));
+
+margin:auto;
+
+padding-inline:32px;
+
+}
+
+.section{
+
+padding:120px 0;
+
+}
+
+.gold{
+
+color:var(--gold);
+
+}
+
+.center{
+
+text-align:center;
+
+}

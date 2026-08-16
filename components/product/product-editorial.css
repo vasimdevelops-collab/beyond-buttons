@@ -1,0 +1,341 @@
+/* ============================================================
+   PRODUCT EDITORIAL — Phase B2 presentation shell
+   Sections own their markup; this file owns space + overlap.
+   ============================================================ */
+
+.product-editorial {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
+  background: var(--color-bg);
+}
+
+.product-editorial__section {
+  position: relative;
+  z-index: 1;
+  margin-top: -clamp(48px, 8vh, 96px);
+  padding: clamp(120px, 18vh, 200px) 0 clamp(96px, 14vh, 168px);
+  background:
+    radial-gradient(ellipse 55% 40% at 12% 18%, var(--wash-gold-soft), transparent 62%),
+    radial-gradient(ellipse 48% 36% at 88% 78%, var(--wash-gold-soft), transparent 65%),
+    var(--surface-backdrop);
+  border-top: 1px solid var(--hairline);
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+.product-editorial__section:first-child {
+  margin-top: 0;
+  border-top: 0;
+}
+
+.product-editorial__section + .product-editorial__section {
+  box-shadow: 0 -28px 80px var(--shadow-soft);
+}
+
+.product-editorial__header {
+  width: min(100% - 64px, var(--container));
+  max-width: 720px;
+  margin: 0 auto clamp(56px, 8vh, 96px);
+}
+
+.product-editorial__eyebrow {
+  display: block;
+  margin: 0 0 18px;
+  color: var(--goldLight);
+  font: 600 11px/1.2 var(--font-body);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+.product-editorial__header h2 {
+  margin: 0;
+  color: var(--offWhite);
+  font-family: var(--font-heading);
+  font-size: clamp(42px, 6vw, 72px);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.05;
+}
+
+/* ── Signature Details ── */
+
+.signature-details__grid {
+  width: min(100% - 64px, var(--container));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 2.4vw, 28px);
+}
+
+.signature-card {
+  position: relative;
+  min-height: clamp(220px, 28vh, 280px);
+  padding: clamp(28px, 3vw, 40px);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.signature-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    145deg,
+    var(--wash-gold-soft),
+    transparent 42%,
+    transparent 70%,
+    var(--wash-neutral)
+  );
+  pointer-events: none;
+}
+
+.signature-card__index {
+  position: relative;
+  display: block;
+  margin-bottom: 28px;
+  color: var(--goldLight);
+  font: 600 11px/1 var(--font-body);
+  letter-spacing: 0.22em;
+}
+
+.signature-card__value {
+  position: relative;
+  display: block;
+  color: var(--offWhite);
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+}
+
+.signature-card__data {
+  position: relative;
+  display: grid;
+  gap: 22px;
+  margin: 0;
+}
+
+.signature-card__data div {
+  display: grid;
+  gap: 8px;
+}
+
+.signature-card__data dt {
+  color: var(--text-muted);
+  font: 600 10px/1.2 var(--font-body);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.signature-card__data dd {
+  margin: 0;
+  color: var(--offWhite);
+  font-family: var(--font-heading);
+  font-size: clamp(24px, 2.4vw, 34px);
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  line-height: 1.2;
+}
+
+/* ── The Craft ── */
+
+.editorial-craft__composition {
+  width: min(100% - 64px, var(--container));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(40px, 6vw, 96px);
+  align-items: end;
+}
+
+.editorial-craft__quote {
+  margin: 0;
+  max-width: 18ch;
+  color: var(--offWhite);
+  font-family: var(--font-heading);
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  line-height: 1.12;
+}
+
+.editorial-craft__media {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid var(--hairline-gold);
+  border-radius: var(--radius-card);
+  background: var(--surface-frame);
+  box-shadow: var(--shadow-card);
+  will-change: transform, clip-path;
+}
+
+.editorial-craft__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.editorial-craft__media figcaption {
+  position: absolute;
+  left: 22px;
+  bottom: 20px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--surface-glass);
+  color: var(--text-on-media);
+  font: 600 10px/1 var(--font-body);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+}
+
+/* ── The Fabric ── */
+
+.editorial-fabric__metrics {
+  width: min(100% - 64px, var(--container));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(28px, 4vw, 48px) clamp(24px, 3vw, 40px);
+}
+
+.editorial-fabric__metric {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  min-height: clamp(160px, 22vh, 220px);
+  padding: clamp(28px, 3vw, 40px) 0 clamp(24px, 2.5vw, 32px);
+}
+
+.editorial-fabric__index {
+  color: var(--goldLight);
+  font: 600 11px/1 var(--font-body);
+  letter-spacing: 0.22em;
+}
+
+.editorial-fabric__metric dt {
+  color: var(--text-muted);
+  font: 600 11px/1.2 var(--font-body);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.editorial-fabric__metric dd {
+  margin: 0;
+  color: var(--offWhite);
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 500;
+  letter-spacing: 0.015em;
+  line-height: 1.1;
+}
+
+.editorial-fabric__line {
+  display: block;
+  width: 72px;
+  height: 1px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 1199px) {
+  .product-editorial__header,
+  .signature-details__grid,
+  .editorial-craft__composition,
+  .editorial-fabric__metrics {
+    width: min(100% - 48px, var(--container));
+  }
+
+  .editorial-craft__composition {
+    gap: clamp(32px, 5vw, 56px);
+  }
+}
+
+@media (max-width: 1023px) {
+  .product-editorial__section {
+    margin-top: -clamp(32px, 5vh, 56px);
+    padding: clamp(96px, 14vh, 140px) 0 clamp(80px, 12vh, 120px);
+  }
+
+  .signature-details__grid,
+  .editorial-craft__composition,
+  .editorial-fabric__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .editorial-craft__quote {
+    max-width: 22ch;
+  }
+
+  .editorial-craft__media {
+    aspect-ratio: 5 / 6;
+  }
+}
+
+@media (max-width: 767px) {
+  .product-editorial__header,
+  .signature-details__grid,
+  .editorial-craft__composition,
+  .editorial-fabric__metrics {
+    width: min(100% - 40px, 640px);
+  }
+
+  .product-editorial__section {
+    margin-top: -28px;
+    padding: clamp(88px, 14vh, 120px) 0 80px;
+  }
+
+  .product-editorial__header {
+    margin-bottom: clamp(40px, 7vh, 64px);
+  }
+
+  .product-editorial__header h2 {
+    font-size: clamp(36px, 11vw, 52px);
+  }
+
+  .signature-card {
+    min-height: 0;
+  }
+
+  .editorial-craft__quote {
+    font-size: clamp(32px, 9vw, 44px);
+  }
+}
+
+@media (max-width: 420px) {
+  .product-editorial__header,
+  .signature-details__grid,
+  .editorial-craft__composition,
+  .editorial-fabric__metrics {
+    width: min(100% - 28px, 392px);
+  }
+}
+
+@media (min-width: 1920px) {
+  .product-editorial__header,
+  .signature-details__grid,
+  .editorial-craft__composition,
+  .editorial-fabric__metrics {
+    max-width: 1680px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-editorial__section {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

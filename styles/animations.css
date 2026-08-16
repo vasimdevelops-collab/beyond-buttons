@@ -1,0 +1,25 @@
+*{
+
+transition:all .35s ease;
+
+}
+
+img{
+
+user-select:none;
+
+}
+
+button{
+
+cursor:pointer;
+
+}
+
+a{
+
+text-decoration:none;
+
+color:inherit;
+
+}

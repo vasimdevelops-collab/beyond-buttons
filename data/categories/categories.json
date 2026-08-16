@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "solid-t-shirts",
+      "slug": "solid-t-shirts",
+      "name": "Solid T-Shirts",
+      "title": "Solid T-Shirts",
+      "description": "The Beyond Buttons signature edit — elevated solid tees cut for presence, not noise.",
+      "ctaLabel": "Explore Collection",
+      "href": "/category/solid-t-shirts",
+      "media": {
+        "type": null,
+        "src": null,
+        "alt": "Solid T-Shirts — Beyond Buttons"
+      },
+      "seo": {
+        "title": "Solid T-Shirts — Beyond Buttons",
+        "description": "Shop Beyond Buttons Solid T-Shirts. Premium solids crafted for presence."
+      },
+      "order": 1,
+      "published": true
+    }
+  ]
+}

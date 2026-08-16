@@ -1,0 +1,358 @@
+/* Customer authentication — Beyond Buttons storefront language */
+
+.customer-auth {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow-x: clip;
+  background:
+    radial-gradient(ellipse 55% 40% at 50% 0%, var(--wash-gold-soft), transparent 60%),
+    var(--surface-backdrop);
+  color: var(--color-text);
+}
+
+.customer-auth--gate {
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  color: var(--text-muted);
+  font: 400 14px/1.5 var(--font-body);
+}
+
+.customer-auth__main {
+  width: min(100% - 40px, 480px);
+  margin: 0 auto;
+  padding: clamp(112px, 16vh, 148px) 0 clamp(72px, 10vh, 120px);
+}
+
+.customer-auth__main--account {
+  width: min(100% - 40px, 640px);
+}
+
+.customer-auth__card {
+  padding: clamp(28px, 4vw, 40px);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card, 22px);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+
+.customer-auth__brand {
+  display: inline-flex;
+  margin-bottom: 18px;
+}
+
+.customer-auth__brand img {
+  width: 72px;
+  height: auto;
+  display: block;
+}
+
+.customer-auth__eyebrow {
+  margin: 0 0 10px;
+  color: var(--goldLight, var(--gold));
+  font: 600 11px/1.2 var(--font-body);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.customer-auth__title {
+  margin: 0;
+  color: var(--offWhite, var(--color-text));
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 5vw, 42px);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+
+.customer-auth__support {
+  margin: 12px 0 0;
+  color: var(--text-muted);
+  font: 400 15px/1.65 var(--font-body);
+}
+
+.customer-auth__form {
+  margin-top: 28px;
+  display: grid;
+  gap: 14px;
+}
+
+.customer-auth__field {
+  display: grid;
+  gap: 8px;
+}
+
+.customer-auth__label {
+  color: var(--text-muted);
+  font: 600 10px/1.2 var(--font-body);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.customer-auth__field input {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 14px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--surface-glass, transparent);
+  color: var(--offWhite, var(--color-text));
+  font: 400 15px/1.4 var(--font-body);
+  transition:
+    border-color var(--duration-focus, 420ms) var(--ease-luxury, ease),
+    box-shadow var(--duration-focus, 420ms) var(--ease-luxury, ease);
+}
+
+.customer-auth__field input:focus-visible {
+  outline: 1px solid var(--goldLight, var(--gold));
+  outline-offset: 2px;
+  border-color: var(--hairline-gold);
+}
+
+.customer-auth__field input[aria-invalid="true"] {
+  border-color: rgba(180, 80, 70, 0.55);
+}
+
+.customer-auth__error,
+.customer-auth__form-error {
+  color: #d4a39a;
+  font: 400 12px/1.4 var(--font-body);
+}
+
+.customer-auth__row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.customer-auth__row--split {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.customer-auth__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font: 400 13px/1.4 var(--font-body);
+  cursor: pointer;
+}
+
+.customer-auth__checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--gold, #c9a96e);
+  cursor: pointer;
+}
+
+.customer-auth__link,
+.customer-auth__footer a {
+  color: var(--goldLight, var(--gold));
+  font: 500 13px/1.4 var(--font-body);
+  text-decoration: none;
+}
+
+.customer-auth__link:hover,
+.customer-auth__footer a:hover {
+  text-decoration: underline;
+}
+
+.customer-auth__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
+  border: 1px solid var(--btn-primary-border, var(--hairline-gold));
+  background: var(--btn-primary-bg, transparent);
+  color: var(--btn-primary-text, var(--offWhite));
+  font: 600 11px/1 var(--font-body);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-hover, 700ms) var(--ease-luxury, ease),
+    box-shadow var(--duration-hover, 700ms) var(--ease-luxury, ease),
+    transform var(--duration-hover, 700ms) var(--ease-luxury, ease);
+}
+
+.customer-auth__submit:hover {
+  border-color: var(--btn-primary-hover-border, var(--goldLight));
+  box-shadow: var(--btn-primary-hover-shadow);
+  transform: translateY(-1px);
+}
+
+.customer-auth__submit--ghost {
+  border-color: var(--hairline);
+  color: var(--text-muted-strong, var(--text-muted));
+}
+
+.customer-auth__divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 22px 0;
+  color: var(--text-muted-soft, var(--text-muted));
+  font: 500 11px/1 var(--font-body);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.customer-auth__divider::before,
+.customer-auth__divider::after {
+  content: "";
+  height: 1px;
+  background: var(--hairline);
+}
+
+.customer-auth__google {
+  width: 100%;
+  min-height: 52px;
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding: 12px 18px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted-strong, var(--text-muted));
+  font: 600 11px/1.2 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-hover, 700ms) var(--ease-luxury, ease),
+    color var(--duration-hover, 700ms) var(--ease-luxury, ease);
+}
+
+.customer-auth__google:hover:not(:disabled) {
+  border-color: var(--hairline-gold);
+  color: var(--offWhite, var(--color-text));
+}
+
+.customer-auth__google:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.customer-auth__footer {
+  margin: 22px 0 0;
+  text-align: center;
+  color: var(--text-muted);
+  font: 400 14px/1.5 var(--font-body);
+}
+
+.customer-auth__success {
+  margin-top: 24px;
+  padding: 18px 16px;
+  border: 1px solid var(--hairline-gold);
+  border-radius: 16px;
+  background: var(--wash-gold-soft);
+  color: var(--text-muted-strong, var(--text-muted));
+  font: 400 14px/1.6 var(--font-body);
+}
+
+.customer-auth__success strong {
+  color: var(--offWhite, var(--color-text));
+  font-weight: 500;
+}
+
+.customer-auth__meta {
+  margin: 28px 0 0;
+  display: grid;
+  gap: 16px;
+}
+
+.customer-auth__meta > div {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.customer-auth__meta dt {
+  color: var(--text-muted);
+  font: 600 10px/1.2 var(--font-body);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.customer-auth__meta dd {
+  margin: 0;
+  color: var(--offWhite, var(--color-text));
+  font: 400 16px/1.4 var(--font-body);
+}
+
+.customer-auth__account-orders {
+  margin-top: 28px;
+  display: grid;
+  gap: 14px;
+}
+
+.customer-auth__subheading {
+  margin: 0;
+  color: var(--offWhite, var(--color-text));
+  font: 600 12px/1.2 var(--font-body);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.customer-auth__muted {
+  margin: 0;
+  color: var(--text-muted);
+  font: 400 14px/1.5 var(--font-body);
+}
+
+.customer-auth__order-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.customer-auth__order-item {
+  display: grid;
+  grid-template-columns: 1.4fr 0.9fr 0.9fr 0.9fr 0.8fr;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--surface-glass, transparent);
+  color: var(--offWhite, var(--color-text));
+  font: 400 13px/1.4 var(--font-body);
+}
+
+.customer-auth__order-item strong,
+.customer-auth__order-item small,
+.customer-auth__order-item span {
+  display: block;
+}
+
+.customer-auth__order-item small {
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.customer-auth__account-actions {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 767px) {
+  .customer-auth__main {
+    width: min(100% - 32px, 480px);
+    padding-top: 108px;
+  }
+
+  .customer-auth__account-actions {
+    grid-template-columns: 1fr;
+  }
+}

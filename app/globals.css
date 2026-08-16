@@ -1,0 +1,44 @@
+@import "../styles/variables.css";
+@import "../styles/typography.css";
+@import "../styles/utilities.css";
+@import "../styles/animations.css";
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+html{
+
+scroll-behavior:smooth;
+
+}
+
+body{
+
+background:var(--color-bg);
+
+color:var(--color-text);
+
+overflow-x:hidden;
+
+}
+
+img{
+
+display:block;
+
+max-width:100%;
+
+}
+
+button{
+
+border:none;
+
+outline:none;
+
+background:none;
+
+}

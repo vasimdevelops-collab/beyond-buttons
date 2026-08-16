@@ -1,0 +1,19 @@
+:root{
+
+--black:#000000;
+--dark:#0D0D0D;
+--card:#151515;
+
+--gold:#D4AF37;
+--goldLight:#F1D37B;
+
+--white:#ffffff;
+--offWhite:#F5F5F5;
+
+--container:1440px;
+
+--transition:.35s ease;
+
+--radius:18px;
+
+}

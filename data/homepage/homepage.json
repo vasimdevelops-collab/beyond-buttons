@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "announcementBar": {
+    "enabled": false,
+    "text": "",
+    "linkLabel": "",
+    "linkHref": "",
+    "dismissible": true
+  },
+  "intro": {
+    "brandLabel": "Beyond Buttons",
+    "subtitle": "Enter the world of solids.",
+    "enterLabel": "Enter",
+    "logoSrc": "/images/logo.png",
+    "markSrc": "/images/B.png",
+    "backgroundSrc": "/images/homeback.jpeg"
+  },
+  "hero": {
+    "label": "Beyond Buttons",
+    "headlineLines": [
+      "We don't sell shirts.",
+      "We define presence."
+    ],
+    "subtitleLines": [
+      "Crafted with premium fabrics,",
+      "timeless tailoring,",
+      "and confidence in every stitch."
+    ],
+    "scrollLabel": "Scroll",
+    "media": {
+      "type": null,
+      "src": null,
+      "alt": "Beyond Buttons campaign"
+    },
+    "buttons": {
+      "primary": {
+        "label": "Shop Collection",
+        "href": "/category/solid-t-shirts"
+      },
+      "secondary": {
+        "label": "Our Story",
+        "href": "#about"
+      }
+    }
+  },
+  "headings": {
+    "categories": {
+      "eyebrow": "",
+      "title": "Shop by Category",
+      "description": ""
+    },
+    "products": {
+      "eyebrow": "The Edit",
+      "title": "Featured Collection",
+      "description": "Hand-finished pieces from our latest drop, cut for those who dress with intention."
+    },
+    "why": {
+      "eyebrow": "The Difference",
+      "title": "Why Beyond Buttons",
+      "description": "Crafted for people who believe quality is remembered long after price is forgotten."
+    }
+  },
+  "descriptions": {
+    "brand": "Luxury solids. Presence, defined.",
+    "whyFeatures": [
+      {
+        "id": "fabric",
+        "title": "Premium Fabric",
+        "copy": "Made using premium cotton for all-day comfort."
+      },
+      {
+        "id": "design",
+        "title": "Minimal Design",
+        "copy": "Timeless silhouettes that never go out of style."
+      },
+      {
+        "id": "fit",
+        "title": "Perfect Fit",
+        "copy": "Balanced proportions for every body."
+      },
+      {
+        "id": "lasting",
+        "title": "Made To Last",
+        "copy": "Designed for years, not seasons."
+      }
+    ]
+  },
+  "collections": [
+    {
+      "id": "solid-t-shirts",
+      "slug": "solid-t-shirts",
+      "title": "Solid T-Shirts",
+      "description": "The Beyond Buttons signature edit — elevated solid tees cut for presence.",
+      "ctaLabel": "Explore Collection",
+      "href": "/category/solid-t-shirts",
+      "media": {
+        "type": null,
+        "src": null,
+        "alt": "Solid T-Shirts — Beyond Buttons"
+      }
+    }
+  ],
+  "featuredProductIds": [
+    "black-solid-t-shirt",
+    "white-solid-t-shirt"
+  ],
+  "footer": {
+    "brandName": "Beyond Buttons",
+    "tagline": "We don't sell shirts. We define presence.",
+    "copyright": "Beyond Buttons. All rights reserved.",
+    "columns": [
+      {
+        "id": "shop",
+        "title": "Shop",
+        "links": [
+          {
+            "label": "Solid T-Shirts",
+            "href": "/category/solid-t-shirts"
+          },
+          {
+            "label": "Black Solid T-Shirt",
+            "href": "/product/black-solid-t-shirt"
+          },
+          {
+            "label": "White Solid T-Shirt",
+            "href": "/product/white-solid-t-shirt"
+          }
+        ]
+      },
+      {
+        "id": "company",
+        "title": "Company",
+        "links": [
+          {
+            "label": "About",
+            "href": "#about"
+          },
+          {
+            "label": "Contact",
+            "href": "#contact"
+          }
+        ]
+      },
+      {
+        "id": "support",
+        "title": "Support",
+        "links": [
+          {
+            "label": "Shipping",
+            "href": "#shipping"
+          },
+          {
+            "label": "Returns",
+            "href": "#returns"
+          }
+        ]
+      }
+    ]
+  },
+  "socialLinks": {
+    "instagram": "",
+    "facebook": "",
+    "youtube": "",
+    "whatsapp": ""
+  }
+}

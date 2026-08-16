@@ -1,0 +1,164 @@
+[
+  {
+    "id": "black-solid-t-shirt",
+    "slug": "black-solid-t-shirt",
+    "name": "Black Solid T-Shirt",
+    "shortName": "Black Solid T-Shirt",
+    "category": "Solid T-Shirts",
+    "price": 1499,
+    "comparePrice": 1999,
+    "brandStatement": "A disciplined black tee — clean lines, intentional weight, presence without distraction.",
+    "gallery": [
+      {
+        "src": "/images/images%20(3).jfif",
+        "alt": "Black Solid T-Shirt front view",
+        "type": "image"
+      },
+      {
+        "src": "/images/images.jfif",
+        "alt": "Solid T-Shirt studio view",
+        "type": "image"
+      },
+      {
+        "src": "/images/images%20(1).jfif",
+        "alt": "Solid T-Shirt detail view",
+        "type": "image"
+      }
+    ],
+    "colors": [
+      {
+        "name": "Black",
+        "hex": "#0A0A0A",
+        "gallery": [
+          {
+            "src": "/images/images%20(3).jfif",
+            "alt": "Black Solid T-Shirt front view",
+            "type": "image"
+          }
+        ]
+      }
+    ],
+    "sizes": [
+      {
+        "size": "S",
+        "stock": 12
+      },
+      {
+        "size": "M",
+        "stock": 18
+      },
+      {
+        "size": "L",
+        "stock": 22
+      },
+      {
+        "size": "XL",
+        "stock": 9
+      },
+      {
+        "size": "XXL",
+        "stock": 6
+      }
+    ],
+    "story": "A disciplined black tee — clean lines, intentional weight, presence without distraction.",
+    "signatureDetails": [],
+    "fabric": {
+      "gsm": "",
+      "material": "",
+      "origin": "",
+      "finish": ""
+    },
+    "care": [],
+    "shipping": {
+      "cod": true,
+      "returnDays": 7,
+      "freeShipping": true
+    },
+    "seo": {
+      "title": "Black Solid T-Shirt — Beyond Buttons",
+      "description": "Black Solid T-Shirt by Beyond Buttons. A refined solid tee for everyday presence.",
+      "image": "/images/images%20(3).jfif"
+    }
+  },
+  {
+    "id": "white-solid-t-shirt",
+    "slug": "white-solid-t-shirt",
+    "name": "White Solid T-Shirt",
+    "shortName": "White Solid T-Shirt",
+    "category": "Solid T-Shirts",
+    "price": 1299,
+    "comparePrice": 1799,
+    "brandStatement": "A precise white tee — bright without harshness, structured for quiet confidence.",
+    "gallery": [
+      {
+        "src": "/images/images%20(4).jfif",
+        "alt": "White Solid T-Shirt front view",
+        "type": "image"
+      },
+      {
+        "src": "/images/homeback.jpeg",
+        "alt": "Beyond Buttons solid colour wardrobe",
+        "type": "image"
+      },
+      {
+        "src": "/images/images%20(5).jfif",
+        "alt": "Beyond Buttons lifestyle view",
+        "type": "image"
+      }
+    ],
+    "colors": [
+      {
+        "name": "White",
+        "hex": "#F7F7F5",
+        "gallery": [
+          {
+            "src": "/images/images%20(4).jfif",
+            "alt": "White Solid T-Shirt front view",
+            "type": "image"
+          }
+        ]
+      }
+    ],
+    "sizes": [
+      {
+        "size": "S",
+        "stock": 10
+      },
+      {
+        "size": "M",
+        "stock": 16
+      },
+      {
+        "size": "L",
+        "stock": 20
+      },
+      {
+        "size": "XL",
+        "stock": 8
+      },
+      {
+        "size": "XXL",
+        "stock": 5
+      }
+    ],
+    "story": "A precise white tee — bright without harshness, structured for quiet confidence.",
+    "signatureDetails": [],
+    "fabric": {
+      "gsm": "",
+      "material": "",
+      "origin": "",
+      "finish": ""
+    },
+    "care": [],
+    "shipping": {
+      "cod": true,
+      "returnDays": 7,
+      "freeShipping": true
+    },
+    "seo": {
+      "title": "White Solid T-Shirt — Beyond Buttons",
+      "description": "White Solid T-Shirt by Beyond Buttons. A refined solid tee for everyday presence.",
+      "image": "/images/images%20(4).jfif"
+    }
+  }
+]

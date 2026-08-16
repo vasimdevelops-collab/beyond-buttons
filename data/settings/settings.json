@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "brandName": "Beyond Buttons",
+  "phone": "",
+  "email": "",
+  "whatsapp": "",
+  "address": "",
+  "instagram": "",
+  "facebook": "",
+  "youtube": "",
+  "metaTitle": "Beyond Buttons",
+  "metaDescription": "Luxury Solid Shirt Brand",
+  "logo": {
+    "full": "/images/logo.png",
+    "mark": "/images/B.png"
+  },
+  "locale": "en-IN",
+  "currency": "INR",
+  "defaultTheme": "dark"
+}

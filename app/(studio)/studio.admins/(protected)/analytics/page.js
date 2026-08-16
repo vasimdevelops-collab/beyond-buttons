@@ -1,0 +1,213 @@
+import { bootstrapDatabase } from "@/lib/database/register";
+import {
+  CategoryModel,
+  CouponModel,
+  CustomerModel,
+  MediaModel,
+  OrderModel,
+  ProductModel,
+} from "@/lib/database/models";
+
+function formatMoney(value) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(Number(value || 0));
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat("en-IN").format(Number(value || 0));
+}
+
+export const metadata = {
+  title: "Analytics — Beyond Buttons Studio",
+};
+
+export default async function StudioAnalyticsPage() {
+  await bootstrapDatabase();
+
+  const [
+    productCount,
+    customerCount,
+    totalOrderCount,
+    categoryCount,
+    mediaCount,
+    couponCount,
+    paidRevenue,
+    ordersByPaymentStatus,
+    ordersByShippingStatus,
+  ] = await Promise.all([
+    ProductModel.countDocuments({ status: { $ne: "archived" } }),
+    CustomerModel.countDocuments(),
+    OrderModel.countDocuments(),
+    CategoryModel.countDocuments(),
+    MediaModel.countDocuments(),
+    CouponModel.countDocuments(),
+    // Revenue: sum of PAID orders only (not pending/failed/refunded).
+    OrderModel.aggregate([
+      { $match: { paymentStatus: "paid" } },
+      { $group: { _id: null, total: { $sum: "$total" } } },
+    ]).then((rows) => rows[0]?.total || 0),
+    // Order count by payment status.
+    OrderModel.aggregate([
+      { $group: { _id: "$paymentStatus", count: { $sum: 1 } } },
+    ]),
+    // Order count by shipping status.
+    OrderModel.aggregate([
+      { $group: { _id: "$shippingStatus", count: { $sum: 1 } } },
+    ]),
+  ]);
+
+  const paymentBreakdown = ordersByPaymentStatus.reduce((acc, row) => {
+    acc[row._id || "unknown"] = row.count;
+    return acc;
+  }, {});
+
+  const shippingBreakdown = ordersByShippingStatus.reduce((acc, row) => {
+    acc[row._id || "unknown"] = row.count;
+    return acc;
+  }, {});
+
+  const kpis = [
+    { label: "Products", value: formatNumber(productCount), detail: "active catalog" },
+    { label: "Customers", value: formatNumber(customerCount), detail: "registered accounts" },
+    { label: "Orders", value: formatNumber(totalOrderCount), detail: "all time" },
+    { label: "Revenue", value: formatMoney(paidRevenue), detail: "paid orders only" },
+    { label: "Categories", value: formatNumber(categoryCount), detail: "collections" },
+    { label: "Media", value: formatNumber(mediaCount), detail: "uploaded assets" },
+    { label: "Coupons", value: formatNumber(couponCount), detail: "total coupons" },
+  ];
+
+  const summaryRows = [
+    { key: "products", label: "Products", value: formatNumber(productCount) },
+    { key: "customers", label: "Customers", value: formatNumber(customerCount) },
+    { key: "orders", label: "Orders (all)", value: formatNumber(totalOrderCount) },
+    { key: "revenue", label: "Revenue (paid)", value: formatMoney(paidRevenue) },
+    { key: "media", label: "Media", value: formatNumber(mediaCount) },
+    { key: "coupons", label: "Coupons", value: formatNumber(couponCount) },
+  ];
+
+  const paymentRows = [
+    { key: "pending", label: "Pending payment", value: formatNumber(paymentBreakdown.pending || 0) },
+    { key: "paid", label: "Paid", value: formatNumber(paymentBreakdown.paid || 0) },
+    { key: "failed", label: "Failed", value: formatNumber(paymentBreakdown.failed || 0) },
+    { key: "refunded", label: "Refunded", value: formatNumber(paymentBreakdown.refunded || 0) },
+  ];
+
+  const shippingRows = [
+    { key: "pending", label: "Pending shipment", value: formatNumber(shippingBreakdown.pending || 0) },
+    { key: "processing", label: "Processing", value: formatNumber(shippingBreakdown.processing || 0) },
+    { key: "shipped", label: "Shipped", value: formatNumber(shippingBreakdown.shipped || 0) },
+    { key: "delivered", label: "Delivered", value: formatNumber(shippingBreakdown.delivered || 0) },
+    { key: "cancelled", label: "Cancelled", value: formatNumber(shippingBreakdown.cancelled || 0) },
+  ];
+
+  return (
+    <>
+      <header className="studio-main__header studio-products__header">
+        <div>
+          <p className="studio-main__eyebrow">Beyond Buttons Studio</p>
+          <h1 className="studio-main__title">Analytics</h1>
+          <p className="studio-main__copy">
+            Live commerce metrics pulled from the connected database.
+          </p>
+        </div>
+      </header>
+
+      {/* Overview KPIs */}
+      <section className="studio-section" style={{ marginBottom: "1.25rem" }}>
+        <header className="studio-section__header">
+          <h2 className="studio-section__title">Overview</h2>
+        </header>
+        <div className="studio-section__fields studio-form-grid">
+          {kpis.map((item) => (
+            <article key={item.label} className="studio-metric-card">
+              <span className="studio-metric-card__label">{item.label}</span>
+              <p className="studio-metric-card__value">{item.value}</p>
+              <small className="studio-metric-card__meta">{item.detail}</small>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Summary table */}
+      <section className="studio-section" style={{ marginBottom: "1.25rem" }}>
+        <header className="studio-section__header">
+          <h2 className="studio-section__title">Live summary</h2>
+        </header>
+        <div className="studio-table" data-state="ready" aria-label="Analytics summary">
+          <div className="studio-table__head" role="row">
+            <span>Metric</span>
+            <span>Current value</span>
+          </div>
+          <ul className="studio-table__body">
+            {summaryRows.map((row) => (
+              <li key={row.key}>
+                <div className="studio-table__row">
+                  <span className="studio-table__product">
+                    <strong>{row.label}</strong>
+                  </span>
+                  <span>{row.value}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Payment status breakdown */}
+      <section className="studio-section" style={{ marginBottom: "1.25rem" }}>
+        <header className="studio-section__header">
+          <h2 className="studio-section__title">Orders by payment status</h2>
+          <p className="studio-section__copy">
+            Revenue metric above reflects paid orders only.
+          </p>
+        </header>
+        <div className="studio-table" data-state="ready" aria-label="Payment status breakdown">
+          <div className="studio-table__head" role="row">
+            <span>Payment status</span>
+            <span>Order count</span>
+          </div>
+          <ul className="studio-table__body">
+            {paymentRows.map((row) => (
+              <li key={row.key}>
+                <div className="studio-table__row">
+                  <span className="studio-table__product">
+                    <strong>{row.label}</strong>
+                  </span>
+                  <span>{row.value}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Shipping status breakdown */}
+      <section className="studio-section">
+        <header className="studio-section__header">
+          <h2 className="studio-section__title">Orders by shipping status</h2>
+        </header>
+        <div className="studio-table" data-state="ready" aria-label="Shipping status breakdown">
+          <div className="studio-table__head" role="row">
+            <span>Shipping status</span>
+            <span>Order count</span>
+          </div>
+          <ul className="studio-table__body">
+            {shippingRows.map((row) => (
+              <li key={row.key}>
+                <div className="studio-table__row">
+                  <span className="studio-table__product">
+                    <strong>{row.label}</strong>
+                  </span>
+                  <span>{row.value}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    </>
+  );
+}

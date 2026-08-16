@@ -1,0 +1,656 @@
+/* ============================================================
+   HERO — luxury studio scene, two-column desktop / stacked mobile
+   All motion is GSAP-driven; this file only defines look + layout.
+   ============================================================ */
+
+.hero,
+.hero *,
+.hero *::before,
+.hero *::after {
+  transition: none;
+}
+
+.hero {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--color-bg);
+  visibility: hidden; /* flipped to visible by the entrance timeline (autoAlpha) */
+}
+
+/* ── Atmosphere ── */
+
+.hero__backdrop {
+  position: absolute;
+  inset: -4%;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 78% 38%, var(--wash-gold), transparent 60%),
+    radial-gradient(ellipse 50% 45% at 18% 68%, var(--wash-gold-soft), transparent 65%),
+    radial-gradient(ellipse 90% 80% at 50% 20%, var(--surface-vignette), transparent 70%),
+    var(--surface-backdrop);
+  will-change: transform;
+}
+
+/* Slow "breathing" ambient glow — opacity/duration come from theme tokens
+   so Light mode stays calmer than Dark without changing layout. */
+.hero__backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 55% 45% at 70% 32%,
+    var(--wash-gold-strong),
+    transparent 68%
+  );
+  opacity: var(--atmosphere-glow-opacity);
+  animation: heroBreathe var(--atmosphere-breathe-duration) ease-in-out infinite;
+}
+
+/* Vignette plus a very slow, very soft diagonal light sweep drifting across
+   the scene (animates background-position only — cheap and GPU-friendly). */
+.hero__backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 44%, var(--wash-gold-soft) 50%, transparent 56%),
+    radial-gradient(ellipse 80% 70% at 50% 50%, transparent 45%, var(--shadow-strong) 100%);
+  background-size: 320% 320%, 100% 100%;
+  background-position: 0% 0%, 0 0;
+  animation: heroBeam var(--atmosphere-beam-duration) linear infinite;
+}
+
+.hero__dust {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* "Screen" blend mode lightens, so it reads beautifully against the dark
+   theme's near-black backdrop but washes out to nothing on a light one —
+   swap to a mode (and slightly higher opacity) that keeps the gold motes
+   visible on the ivory surface. */
+:root[data-theme="light"] .hero__dust {
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+}
+
+@keyframes heroBreathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes heroBeam {
+  0% {
+    background-position: -30% -20%, 0 0;
+  }
+  100% {
+    background-position: 130% 120%, 0 0;
+  }
+}
+
+/* ── Layout ── */
+
+.hero__container {
+  position: relative;
+  z-index: 2;
+  width: min(100% - 96px, var(--container));
+  margin-inline: auto;
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 9fr 11fr;
+  align-items: center;
+  gap: clamp(32px, 5vw, 96px);
+  padding-top: clamp(96px, 13vh, 132px);
+  padding-bottom: clamp(48px, 7vh, 72px);
+}
+
+.hero__content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  max-width: 560px;
+}
+
+/* Soft ambient glow seated behind the copy block — paints before the real
+   children in source order, so it sits behind them with no z-index /
+   stacking-context needed, and stays out of GSAP's way entirely. Purely a
+   lighting layer: it does not touch any text color/weight/spacing. */
+.hero__content::before {
+  content: "";
+  position: absolute;
+  inset: -18% -16% -18% -24%;
+  background: radial-gradient(ellipse 66% 58% at 26% 40%, var(--wash-gold), transparent 72%);
+  pointer-events: none;
+}
+
+.hero__label {
+  font-family: var(--font-body);
+  font-size: clamp(11px, 0.9vw, 13px);
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--goldLight);
+  margin-bottom: clamp(20px, 2.6vh, 28px);
+}
+
+.hero__headline {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: clamp(36px, 4.8vw, 70px);
+  line-height: 1.06;
+  letter-spacing: 0.012em;
+  color: var(--offWhite);
+  margin: 0;
+}
+
+.hero__line {
+  display: block;
+}
+
+.hero__subtitle {
+  font-family: var(--font-body);
+  font-size: clamp(15px, 1.05vw, 17.5px);
+  line-height: 1.8;
+  color: var(--text-muted-strong);
+  margin-top: clamp(26px, 3.4vh, 34px);
+  max-width: 400px;
+}
+
+.hero__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: clamp(20px, 2.6vw, 40px);
+  margin-top: clamp(36px, 4.8vh, 52px);
+}
+
+/* ── Primary CTA ── */
+
+.hero__cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.hero__cta--primary {
+  padding: 17px 34px;
+  border: 1px solid var(--btn-primary-border);
+  color: var(--btn-primary-text);
+  background-color: var(--btn-primary-bg);
+  background-image: linear-gradient(
+    115deg,
+    transparent 30%,
+    var(--wash-gold-strong) 50%,
+    transparent 70%
+  );
+  background-repeat: no-repeat;
+  background-size: 220% 100%;
+  background-position: 160% 0;
+  box-shadow: var(--btn-primary-shadow);
+  border-radius: 999px;
+}
+
+.hero .hero__cta--primary {
+  transition: background-position 750ms var(--ease-luxury),
+    border-color var(--duration-hover) var(--ease-luxury),
+    box-shadow var(--duration-hover) var(--ease-luxury),
+    background-color var(--duration-hover) var(--ease-luxury),
+    color var(--duration-hover) var(--ease-luxury),
+    transform var(--duration-hover) var(--ease-luxury);
+}
+
+.hero__cta--primary:hover,
+.hero__cta--primary:focus-visible {
+  background-position: -60% 0;
+  border-color: var(--btn-primary-hover-border);
+  box-shadow: var(--btn-primary-hover-shadow);
+  transform: translateY(-2px);
+}
+
+.hero__cta--primary:active {
+  transform: translateY(0);
+  box-shadow: var(--btn-primary-shadow);
+}
+
+.hero__cta--primary:focus-visible {
+  outline: 1px solid var(--goldLight);
+  outline-offset: 3px;
+}
+
+.hero__cta-glow {
+  position: absolute;
+  inset: -30%;
+  z-index: -1;
+  background: radial-gradient(
+    ellipse 60% 60% at 50% 50%,
+    var(--wash-gold-strong),
+    transparent 70%
+  );
+  filter: blur(14px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero__cta-label {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hero__cta-icon {
+  flex-shrink: 0;
+  color: var(--goldLight);
+}
+
+:root[data-theme="light"] .hero__cta-icon {
+  color: var(--btn-primary-text);
+}
+
+/* ── Secondary CTA ── */
+
+.hero__cta--secondary {
+  padding: 4px 0;
+  background: var(--btn-secondary-bg);
+  border: 1px solid var(--btn-secondary-border);
+  border-radius: 999px;
+}
+
+.hero .hero__cta--secondary {
+  transition: border-color var(--duration-hover) var(--ease-luxury),
+    background-color var(--duration-hover) var(--ease-luxury),
+    box-shadow var(--duration-hover) var(--ease-luxury),
+    transform var(--duration-hover) var(--ease-luxury);
+}
+
+:root[data-theme="light"] .hero__cta--secondary {
+  padding: 12px 22px;
+}
+
+.hero__cta--secondary:hover,
+.hero__cta--secondary:focus-visible {
+  border-color: var(--hairline-gold-strong);
+  box-shadow: 0 8px 22px var(--shadow-soft);
+  transform: translateY(-1px);
+}
+
+.hero__cta--secondary:active {
+  transform: translateY(0);
+}
+
+.hero__cta--secondary:focus-visible {
+  outline: 1px solid var(--goldLight);
+  outline-offset: 3px;
+}
+
+.hero__link-label {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--btn-secondary-text);
+  opacity: 0.9;
+  transition: opacity 380ms ease, color 380ms ease;
+}
+
+/* Underline draw-in stays GSAP-driven; this lifts label presence on hover. */
+.hero__cta--secondary:hover .hero__link-label,
+.hero__cta--secondary:focus-visible .hero__link-label {
+  opacity: 1;
+  color: var(--btn-secondary-hover-text);
+}
+
+.hero__link-underline {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+/* ── Scroll cue ── */
+
+.hero__scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(24px, 4vh, 40px);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transform: translateX(-50%);
+}
+
+.hero__scroll-track {
+  position: relative;
+  width: 1px;
+  height: 34px;
+  background: var(--hairline);
+  overflow: hidden;
+}
+
+.hero__scroll-dot {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--goldLight);
+  transform: translateX(-50%);
+}
+
+.hero__scroll-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted-soft);
+}
+
+/* ============================================================
+   HERO VISUAL — right-column media slot (placeholder until the
+   final campaign asset is supplied)
+   ============================================================ */
+
+.hero-visual {
+  position: relative;
+  width: 100%;
+  height: min(70vh, 760px);
+}
+
+.hero-visual__glow {
+  position: absolute;
+  inset: 6%;
+  z-index: 0;
+  background: radial-gradient(
+    ellipse 55% 55% at 50% 45%,
+    var(--wash-gold),
+    transparent 72%
+  );
+  filter: blur(30px);
+  pointer-events: none;
+  opacity: var(--atmosphere-glow-opacity);
+  animation: heroBreathe var(--atmosphere-breathe-duration) ease-in-out infinite;
+  animation-delay: -3s;
+}
+
+.hero-visual__frame {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  border: 1px solid var(--hairline-gold-strong);
+  border-radius: var(--radius-card);
+  background: var(--surface-frame);
+  box-shadow: var(--shadow-card);
+  will-change: transform;
+}
+
+.hero .hero-visual__frame {
+  transition: border-color var(--duration-hover) var(--ease-luxury),
+    box-shadow var(--duration-hover) var(--ease-luxury);
+}
+
+.hero-visual:hover .hero-visual__frame {
+  border-color: var(--hairline-gold-strong);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.hero-visual__media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.001);
+}
+
+.hero .hero-visual__media {
+  transition: transform 1000ms var(--ease-luxury);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero-visual:hover .hero-visual__media {
+    transform: scale(1.03);
+  }
+}
+
+.hero-visual__sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    115deg,
+    var(--wash-neutral) 0%,
+    transparent 30%,
+    transparent 70%,
+    var(--wash-gold-soft) 100%
+  );
+  pointer-events: none;
+}
+
+.hero-visual__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-visual__corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--hairline-gold-strong);
+}
+
+.hero-visual__corner--tl {
+  top: 22px;
+  left: 22px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.hero-visual__corner--tr {
+  top: 22px;
+  right: 22px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.hero-visual__corner--bl {
+  bottom: 22px;
+  left: 22px;
+  border-right: none;
+  border-top: none;
+}
+
+.hero-visual__corner--br {
+  bottom: 22px;
+  right: 22px;
+  border-left: none;
+  border-top: none;
+}
+
+.hero-visual__placeholder-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--accent-soft);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1199px) {
+  .hero__container {
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(28px, 4vw, 56px);
+  }
+
+  .hero-visual {
+    height: min(62vh, 620px);
+  }
+}
+
+@media (max-width: 1023px) {
+  .hero__container {
+    grid-template-columns: 1fr;
+    padding-top: clamp(104px, 15vh, 132px);
+  }
+
+  .hero__content {
+    max-width: 620px;
+  }
+
+  .hero-visual {
+    height: min(52vh, 520px);
+    order: 2;
+    margin-top: clamp(36px, 5vh, 56px);
+  }
+
+  .hero__scroll-cue {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero {
+    min-height: 100svh;
+  }
+
+  .hero__container {
+    width: min(100% - 48px, 640px);
+    min-height: 100svh;
+    padding-top: clamp(112px, 16vh, 140px);
+    padding-bottom: clamp(32px, 5vh, 48px);
+    gap: 0;
+  }
+
+  .hero__headline {
+    font-size: clamp(30px, 8.6vw, 42px);
+  }
+
+  .hero__subtitle {
+    max-width: 100%;
+  }
+
+  .hero__actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 22px;
+    margin-top: clamp(28px, 5vh, 36px);
+    width: 100%;
+  }
+
+  .hero__cta--primary {
+    width: 100%;
+    justify-content: center;
+    padding: 18px 28px;
+  }
+
+  .hero-visual {
+    height: min(46vh, 420px);
+    margin-top: clamp(32px, 6vh, 44px);
+  }
+
+  .hero-visual__corner {
+    width: 22px;
+    height: 22px;
+  }
+
+  .hero-visual__corner--tl,
+  .hero-visual__corner--tr {
+    top: 14px;
+  }
+
+  .hero-visual__corner--bl,
+  .hero-visual__corner--br {
+    bottom: 14px;
+  }
+
+  .hero-visual__corner--tl,
+  .hero-visual__corner--bl {
+    left: 14px;
+  }
+
+  .hero-visual__corner--tr,
+  .hero-visual__corner--br {
+    right: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .hero__headline {
+    font-size: clamp(28px, 9vw, 36px);
+  }
+
+  .hero__label {
+    letter-spacing: 0.26em;
+  }
+}
+
+@media (min-width: 1920px) {
+  .hero__container {
+    max-width: 1680px;
+  }
+
+  .hero-visual {
+    height: min(72vh, 860px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero {
+    visibility: visible;
+  }
+
+  .hero__dust {
+    display: none;
+  }
+
+  .hero__backdrop::before,
+  .hero__backdrop::after,
+  .hero-visual__glow {
+    animation: none;
+  }
+
+  .hero__cta--primary,
+  .hero__link-label {
+    transition-duration: 0ms;
+  }
+}

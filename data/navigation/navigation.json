@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "desktopMenu": {
+    "primary": [
+      {
+        "id": "home",
+        "label": "Home",
+        "href": "/",
+        "current": true
+      },
+      {
+        "id": "shop",
+        "label": "Shop",
+        "href": "/category/solid-t-shirts",
+        "hasMegaMenu": true
+      },
+      {
+        "id": "collections",
+        "label": "Collections",
+        "href": "/category/solid-t-shirts"
+      },
+      {
+        "id": "new-arrivals",
+        "label": "New Arrivals",
+        "href": "/category/solid-t-shirts"
+      },
+      {
+        "id": "about",
+        "label": "About",
+        "href": "#about"
+      },
+      {
+        "id": "contact",
+        "label": "Contact",
+        "href": "#contact"
+      }
+    ],
+    "utility": [
+      {
+        "id": "search",
+        "label": "Search",
+        "href": "#search",
+        "icon": "search"
+      },
+      {
+        "id": "wishlist",
+        "label": "Wishlist",
+        "href": "#wishlist",
+        "icon": "heart"
+      },
+      {
+        "id": "cart",
+        "label": "Cart",
+        "href": "#cart",
+        "icon": "shopping-bag"
+      },
+      {
+        "id": "account",
+        "label": "Account",
+        "href": "#account",
+        "icon": "user"
+      }
+    ],
+    "megaMenu": [
+      {
+        "id": "solid-t-shirts",
+        "label": "Solid T-Shirts",
+        "detail": "The signature collection",
+        "href": "/category/solid-t-shirts"
+      }
+    ]
+  },
+  "mobileMenu": {
+    "primary": [
+      {
+        "id": "home",
+        "label": "Home",
+        "href": "/"
+      },
+      {
+        "id": "shop",
+        "label": "Shop",
+        "href": "/category/solid-t-shirts"
+      },
+      {
+        "id": "solid-t-shirts",
+        "label": "Solid T-Shirts",
+        "href": "/category/solid-t-shirts"
+      },
+      {
+        "id": "about",
+        "label": "About",
+        "href": "#about"
+      },
+      {
+        "id": "contact",
+        "label": "Contact",
+        "href": "#contact"
+      }
+    ],
+    "actions": [
+      {
+        "id": "search",
+        "label": "Search",
+        "href": "#search",
+        "icon": "search"
+      },
+      {
+        "id": "wishlist",
+        "label": "Wishlist",
+        "href": "#wishlist",
+        "icon": "heart"
+      },
+      {
+        "id": "cart",
+        "label": "Cart",
+        "href": "#cart",
+        "icon": "shopping-bag"
+      },
+      {
+        "id": "account",
+        "label": "Account",
+        "href": "#account",
+        "icon": "user"
+      }
+    ]
+  },
+  "footerMenu": [
+    {
+      "id": "shop",
+      "title": "Shop",
+      "links": [
+        {
+          "label": "Solid T-Shirts",
+          "href": "/category/solid-t-shirts"
+        },
+        {
+          "label": "Black Solid T-Shirt",
+          "href": "/product/black-solid-t-shirt"
+        },
+        {
+          "label": "White Solid T-Shirt",
+          "href": "/product/white-solid-t-shirt"
+        }
+      ]
+    },
+    {
+      "id": "company",
+      "title": "Company",
+      "links": [
+        {
+          "label": "Home",
+          "href": "/"
+        },
+        {
+          "label": "About",
+          "href": "#about"
+        },
+        {
+          "label": "Contact",
+          "href": "#contact"
+        }
+      ]
+    },
+    {
+      "id": "support",
+      "title": "Support",
+      "links": [
+        {
+          "label": "Shipping",
+          "href": "#shipping"
+        },
+        {
+          "label": "Returns",
+          "href": "#returns"
+        }
+      ]
+    }
+  ]
+}
