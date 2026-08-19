@@ -156,6 +156,10 @@
           {
             "label": "Contact Us",
             "href": "/contact"
+          },
+          {
+            "label": "Terms & Conditions",
+            "href": "/terms"
           }
         ]
       }
