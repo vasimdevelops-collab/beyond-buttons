@@ -5,6 +5,7 @@ import { getAuth } from "@/lib/auth/server";
 import { bootstrapDatabase } from "@/lib/database/register";
 import { OrderModel, ProductModel, CouponModel } from "@/lib/database/models";
 import { sendTransactionalEmail } from "@/lib/email/smtp";
+import { buildOrderConfirmationEmail } from "@/lib/email/templates";
 
 function toSlug(value = "") {
   return String(value)
@@ -161,7 +162,7 @@ async function validateCouponServerSide(code, subtotal) {
     return {
       valid: false,
       discount: 0,
-      message: `Minimum order value for this coupon is ₹${minSubtotal}.`,
+      message: `Minimum order value for this coupon is Rs. ${minSubtotal}.`,
     };
   }
 
@@ -417,11 +418,12 @@ export async function POST(request) {
 
     // ── 6. Best-effort confirmation email ─────────────────────────────────
     try {
-      const emailHtml = generateOrderConfirmationEmail(created, snapshots, body);
+      const { subject, html, text } = buildOrderConfirmationEmail({ order: created, items: snapshots, body });
       await sendTransactionalEmail({
         to: contactEmail || authSession.user.email,
-        subject: `Order Confirmation — ${created.orderNumber}`,
-        html: emailHtml,
+        subject,
+        html,
+        text,
       });
     } catch (emailError) {
       console.error("[orders] Failed to send confirmation email:", emailError);
@@ -446,122 +448,6 @@ export async function POST(request) {
   }
 }
 
-function generateOrderConfirmationEmail(order, items, body) {
-  const shippingAddress = body?.shippingAddress || order.shippingAddress;
-  const contact = body?.contact || { email: "", phone: "" };
-
-  const itemsHtml = items.map((item) => `
-    <tr style="border-bottom: 1px solid #e5e5e5;">
-      <td style="padding: 16px 0;">
-        <table cellpadding="0" cellspacing="0" style="width: 100%;">
-          <tr>
-            <td style="width: 80px; padding-right: 16px;">
-              ${item.image?.src ? `<img src="${item.image.src}" alt="${item.product.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px;" />` : ''}
-            </td>
-            <td style="vertical-align: top;">
-              <p style="margin: 0 0 4px; font-size: 16px; font-weight: 600; color: #111;">${item.product.name}</p>
-              <p style="margin: 0 0 4px; font-size: 14px; color: #666;">${item.color.name} / ${item.size}</p>
-              <p style="margin: 0; font-size: 14px; color: #111;">Qty: ${item.quantity} × ${formatPrice(item.unitPrice)}</p>
-            </td>
-            <td style="text-align: right; white-space: nowrap; font-size: 16px; font-weight: 600; color: #111;">
-              ${formatPrice(item.lineTotal)}
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  `).join("");
-
-  const subtotal = formatPrice(order.subtotal);
-  const shipping = formatPrice(order.shipping);
-  const discount = order.discounts ? formatPrice(order.discounts) : "₹0";
-  const total = formatPrice(order.total);
-
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f5f5f5;">
-      <table cellpadding="0" cellspacing="0" style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-        <tr>
-          <td style="padding: 40px 32px; text-align: center; border-bottom: 1px solid #e5e5e5;">
-            <img src="https://beyondbuttons.com/images/logo.png" alt="Beyond Buttons" style="height: 48px;" />
-          </td>
-        </tr>
-        <tr>
-          <td style="padding: 32px;">
-            <h1 style="margin: 0 0 16px; font-size: 28px; font-weight: 700; color: #111; text-align: center;">Order Confirmed</h1>
-            <p style="margin: 0 0 24px; font-size: 16px; color: #666; text-align: center;">Thank you for your order, ${shippingAddress.fullName || "Customer"}!</p>
-            
-            <div style="background-color: #fafafa; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-              <p style="margin: 0 0 8px; font-size: 14px; color: #666;"><strong>Order Number:</strong> ${order.orderNumber}</p>
-              <p style="margin: 0; font-size: 14px; color: #666;"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })}</p>
-            </div>
-
-            <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-              <thead>
-                <tr style="border-bottom: 2px solid #111;">
-                  <th style="padding: 12px 0; text-align: left; font-size: 14px; font-weight: 600; color: #111;">Item</th>
-                  <th style="padding: 12px 0; text-align: right; font-size: 14px; font-weight: 600; color: #111;">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsHtml}
-              </tbody>
-            </table>
-
-            <table cellpadding="0" cellspacing="0" style="width: 100%; margin-top: 24px;">
-              <tr>
-                <td style="padding: 8px 0; font-size: 14px; color: #666;">Subtotal</td>
-                <td style="padding: 8px 0; text-align: right; font-size: 14px; color: #111;">${subtotal}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; font-size: 14px; color: #666;">Shipping</td>
-                <td style="padding: 8px 0; text-align: right; font-size: 14px; color: #111;">${shipping}</td>
-              </tr>
-              ${order.discounts > 0 ? `
-              <tr>
-                <td style="padding: 8px 0; font-size: 14px; color: #666;">Discount (${order.couponCode || "Coupon"})</td>
-                <td style="padding: 8px 0; text-align: right; font-size: 14px; color: #666;">-${discount}</td>
-              </tr>
-              ` : ""}
-              <tr style="border-top: 2px solid #111;">
-                <td style="padding: 16px 0 8px; font-size: 18px; font-weight: 700; color: #111;">Total</td>
-                <td style="padding: 16px 0 8px; text-align: right; font-size: 18px; font-weight: 700; color: #111;">${total}</td>
-              </tr>
-            </table>
-
-            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e5e5;">
-              <h2 style="margin: 0 0 16px; font-size: 18px; font-weight: 600; color: #111;">Shipping Address</h2>
-              <p style="margin: 0 0 4px; font-size: 14px; color: #111;">${shippingAddress.fullName}</p>
-              <p style="margin: 0 0 4px; font-size: 14px; color: #111;">${shippingAddress.line1}${shippingAddress.line2 ? ", " + shippingAddress.line2 : ""}</p>
-              <p style="margin: 0 0 4px; font-size: 14px; color: #111;">${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.postalCode}</p>
-              <p style="margin: 0 0 4px; font-size: 14px; color: #111;">${shippingAddress.country}</p>
-              <p style="margin: 8px 0 0; font-size: 14px; color: #111;">Phone: ${contact.phone || "—"}</p>
-              <p style="margin: 4px 0 0; font-size: 14px; color: #111;">Email: ${contact.email || "—"}</p>
-            </div>
-
-            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e5e5;">
-              <h2 style="margin: 0 0 16px; font-size: 18px; font-weight: 600; color: #111;">Payment Method</h2>
-              <p style="margin: 0; font-size: 14px; color: #111;">${formatPaymentMethod(order.paymentMethod, order.paymentStatus)}</p>
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding: 24px 32px; text-align: center; border-top: 1px solid #e5e5e5; background-color: #fafafa;">
-            <p style="margin: 0 0 16px; font-size: 14px; color: #666;">Questions? Contact us at <a href="mailto:support@beyondbuttons.com" style="color: #111; text-decoration: underline;">support@beyondbuttons.com</a></p>
-            <p style="margin: 0; font-size: 12px; color: #999;">Beyond Buttons — Luxury Solid Shirt Brand</p>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
-}
-
 function formatPrice(amount) {
   if (amount == null || Number.isNaN(Number(amount))) return "—";
   try {
@@ -571,6 +457,6 @@ function formatPrice(amount) {
       maximumFractionDigits: 0,
     }).format(Number(amount));
   } catch {
-    return `₹${Number(amount).toLocaleString("en-IN")}`;
+    return `Rs. ${Number(amount).toLocaleString("en-IN")}`;
   }
 }
