@@ -176,11 +176,11 @@ export default function OverviewDashboard({ initialData }) {
       {/* Live status bar */}
       <div className="ov-live" role="status" aria-live="polite">
         <span className={`ov-live__dot${loading ? " is-refreshing" : ""}`} aria-hidden="true" />
-        <span className="ov-live__text">
+        <span className="ov-live__text" suppressHydrationWarning>
           {loading ? "Refreshing…" : error ? "Connection error — retrying automatically" : `Live · updated ${formatTimeAgo(lastUpdated)}`}
         </span>
         <span className="ov-live__spacer" aria-hidden="true" />
-        <span className="ov-live__count">auto-refresh in {Math.ceil(countdown)}s</span>
+        <span className="ov-live__count" suppressHydrationWarning>auto-refresh in {Math.ceil(countdown)}s</span>
         <button type="button" className="ov-live__refresh" onClick={() => refresh(false)} disabled={loading}>
           <ArrowUpRight size={13} strokeWidth={1.75} aria-hidden="true" />
           Refresh now

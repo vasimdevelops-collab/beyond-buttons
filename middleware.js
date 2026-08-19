@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
-import { ADMIN_SESSION_COOKIE } from "@/lib/admin/session";
+const ADMIN_SESSION_COOKIE = "bb_admin_session";
 
 /**
  * Optimistic route protection (cookie presence only — no DB call).
