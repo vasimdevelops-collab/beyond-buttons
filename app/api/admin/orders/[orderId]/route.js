@@ -143,6 +143,7 @@ export async function PATCH(request, { params }) {
         id: order.id,
         orderNumber: order.orderNumber,
         paymentStatus: order.paymentStatus,
+        paymentMethod: order.paymentMethod || "cod",
         shippingStatus: order.shippingStatus,
         tracking: order.tracking,
         courier: order.courier,

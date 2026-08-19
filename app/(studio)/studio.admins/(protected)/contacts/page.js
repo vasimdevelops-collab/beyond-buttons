@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 const STATUS_OPTIONS = [
   { value: "all", label: "All statuses" },
   { value: "unread", label: "Unread" },
@@ -94,8 +96,10 @@ export default function StudioContactsPage() {
       });
       if (!response.ok) throw new Error("Update failed.");
       await fetchContacts();
+      toast.success(`Marked as ${status}`);
     } catch (err) {
       if (mountedRef.current) setError(err?.message || "Failed to update status.");
+      toast.error("Failed to update status");
     } finally {
       if (mountedRef.current) setBusyId(null);
     }
@@ -111,8 +115,10 @@ export default function StudioContactsPage() {
       });
       if (!response.ok) throw new Error("Delete failed.");
       await fetchContacts();
+      toast.success("Submission deleted");
     } catch (err) {
       if (mountedRef.current) setError(err?.message || "Failed to delete submission.");
+      toast.error("Failed to delete submission");
     } finally {
       if (mountedRef.current) setBusyId(null);
     }

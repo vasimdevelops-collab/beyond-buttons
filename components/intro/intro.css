@@ -149,7 +149,10 @@
   width: clamp(160px, 22vw, 260px);
   height: auto;
   margin-bottom: clamp(20px, 3vh, 32px);
-  filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
+  /* Blend the mark into the dark wardrobe backdrop: black pixels of the
+     artwork disappear (screen), gold/light pixels keep their glow. */
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 24px rgba(212, 175, 55, 0.35));
 }
 
 .intro-copy {

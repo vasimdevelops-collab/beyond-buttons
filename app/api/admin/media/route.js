@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/admin/session";
 import { bootstrapDatabase, MediaModel } from "@/lib/database/register";
+import { getCloudinary } from "@/lib/media/cloudinary";
 
 function normalizeMedia(doc) {
   if (!doc) return null;
@@ -135,6 +136,22 @@ export async function DELETE(request) {
     const id = searchParams.get("id");
     if (!id) {
       return NextResponse.json({ error: "Missing media id" }, { status: 400 });
+    }
+
+    const doc = await MediaModel.findOne({ id }).lean().exec();
+
+    // Remove the asset from Cloudinary when it was uploaded there.
+    if (doc?.cloudinaryId) {
+      const cloudinary = getCloudinary();
+      if (cloudinary) {
+        try {
+          await cloudinary.uploader.destroy(doc.cloudinaryId, {
+            resource_type: doc.type === "video" ? "video" : "image",
+          });
+        } catch (cloudError) {
+          console.error("[admin/media] Cloudinary destroy failed:", cloudError);
+        }
+      }
     }
 
     await MediaModel.deleteOne({ id });

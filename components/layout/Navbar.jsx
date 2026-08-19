@@ -87,6 +87,7 @@ export default function Navbar() {
   const innerRef = useRef(null);
   const brandRef = useRef(null);
   const menuButtonRef = useRef(null);
+  const shopItemRef = useRef(null);
   const compactRef = useRef(false);
   const frameRef = useRef(null);
   const [isMegaOpen, setIsMegaOpen] = useState(false);
@@ -203,6 +204,21 @@ export default function Navbar() {
     return () => media.removeEventListener("change", handleDesktopChange);
   }, []);
 
+  // Close the Shop mega menu when the user clicks anywhere outside the
+  // trigger <li> — hover is covered by onMouseLeave, but a click elsewhere
+  // (e.g. tapping the page while the pointer never leaves) would otherwise
+  // leave the panel lingering on top of the content.
+  useEffect(() => {
+    if (!isMegaOpen) return undefined;
+    const handlePointerDown = (event) => {
+      if (shopItemRef.current && !shopItemRef.current.contains(event.target)) {
+        setIsMegaOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [isMegaOpen]);
+
   // GSAP writes the glass surface + hovered-label colors as inline styles,
   // which — unlike plain CSS — never re-evaluate var(--...) on their own.
   // Whenever the theme flips, re-read the live tokens and re-apply them so
@@ -292,6 +308,7 @@ export default function Navbar() {
                   return (
                     <li
                       key={link.label}
+                      ref={shopItemRef}
                       className="luxury-navbar__shop-item"
                       onMouseEnter={() => setIsMegaOpen(true)}
                       onMouseLeave={() => setIsMegaOpen(false)}

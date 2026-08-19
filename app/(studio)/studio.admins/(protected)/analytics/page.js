@@ -7,6 +7,7 @@ import {
   OrderModel,
   ProductModel,
 } from "@/lib/database/models";
+import SalesChart from "@/components/studio/SalesChart";
 
 function formatMoney(value) {
   return new Intl.NumberFormat("en-IN", {
@@ -18,6 +19,35 @@ function formatMoney(value) {
 
 function formatNumber(value) {
   return new Intl.NumberFormat("en-IN").format(Number(value || 0));
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Resolved once at module scope (server import) so the render path stays pure.
+const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * DAY_MS);
+
+function buildDailySeries(dailyRows, days = 30) {
+  const byDate = new Map();
+  for (const row of dailyRows) {
+    byDate.set(row._id, { orders: row.orders, revenue: row.revenue });
+  }
+
+  const series = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(today.getTime() - i * DAY_MS);
+    const iso = date.toISOString().slice(0, 10);
+    const entry = byDate.get(iso) || { orders: 0, revenue: 0 };
+    series.push({
+      date: iso,
+      label: date.toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
+      orders: Number(entry.orders || 0),
+      revenue: Number(entry.revenue || 0),
+    });
+  }
+  return series;
 }
 
 export const metadata = {
@@ -37,6 +67,7 @@ export default async function StudioAnalyticsPage() {
     paidRevenue,
     ordersByPaymentStatus,
     ordersByShippingStatus,
+    dailySales,
   ] = await Promise.all([
     ProductModel.countDocuments({ status: { $ne: "archived" } }),
     CustomerModel.countDocuments(),
@@ -57,6 +88,25 @@ export default async function StudioAnalyticsPage() {
     OrderModel.aggregate([
       { $group: { _id: "$shippingStatus", count: { $sum: 1 } } },
     ]),
+    // Daily sales (paid orders) for the last 30 days.
+    OrderModel.aggregate([
+      {
+        $match: {
+          paymentStatus: "paid",
+          createdAt: { $gte: THIRTY_DAYS_AGO },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt", timezone: "Asia/Kolkata" },
+          },
+          orders: { $sum: 1 },
+          revenue: { $sum: "$total" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]),
   ]);
 
   const paymentBreakdown = ordersByPaymentStatus.reduce((acc, row) => {
@@ -68,6 +118,8 @@ export default async function StudioAnalyticsPage() {
     acc[row._id || "unknown"] = row.count;
     return acc;
   }, {});
+
+  const salesSeries = buildDailySeries(dailySales);
 
   const kpis = [
     { label: "Products", value: formatNumber(productCount), detail: "active catalog" },
@@ -154,6 +206,17 @@ export default async function StudioAnalyticsPage() {
             ))}
           </ul>
         </div>
+      </section>
+
+      {/* Sales graph */}
+      <section className="studio-section" style={{ marginBottom: "1.25rem" }}>
+        <header className="studio-section__header">
+          <h2 className="studio-section__title">Sales — last 30 days</h2>
+          <p className="studio-section__copy">
+            Paid orders only. Bars = daily revenue, line = revenue trend.
+          </p>
+        </header>
+        <SalesChart series={salesSeries} />
       </section>
 
       {/* Payment status breakdown */}

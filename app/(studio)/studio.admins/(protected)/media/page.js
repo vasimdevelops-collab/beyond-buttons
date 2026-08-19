@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 const FOLDERS = [
   { id: "all", label: "All Assets" },
   { id: "brand", label: "Brand" },
@@ -127,12 +129,15 @@ export default function StudioMediaLibraryPage() {
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         console.error("[media] Upload failed:", data?.error || response.status);
+        toast.error("Upload failed");
         return;
       }
 
       await fetchAssets();
+      toast.success("Media uploaded");
     } catch (err) {
       console.error("[media] Upload error:", err);
+      toast.error("Upload failed");
     }
   }
 
@@ -156,6 +161,9 @@ export default function StudioMediaLibraryPage() {
     const response = await fetch(`/api/admin/media?id=${encodeURIComponent(selected.id)}`, { method: "DELETE" });
     if (response.ok) {
       await fetchAssets();
+      toast.success("Media deleted");
+    } else {
+      toast.error("Unable to delete media");
     }
   }
 

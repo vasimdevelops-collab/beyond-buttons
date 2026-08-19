@@ -119,7 +119,7 @@ export default function Hero() {
   const hero = liveHomepage?.hero || getHomepage().hero;
   const headlineLines = Array.isArray(hero?.headlineLines) && hero.headlineLines.length > 0
     ? hero.headlineLines
-    : ["We don't sell shirts.", "We define presence."];
+    : ["We define presence.", "The perfect solid shirt."];
   const subtitleLines = Array.isArray(hero?.subtitleLines) && hero.subtitleLines.length > 0
     ? hero.subtitleLines
     : ["Crafted with premium fabrics,", "timeless tailoring,", "and confidence in every stitch."];

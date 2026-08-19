@@ -7,17 +7,36 @@ import Intro from "@/components/intro/Intro";
 import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/home/Hero";
 import Products from "@/components/home/Products";
+import BrandStory from "@/components/home/BrandStory";
+import VisionMission from "@/components/home/VisionMission";
 import WhyBeyond from "@/components/home/WhyBeyond";
 import { getHomepage, getSettings } from "@/lib/data";
 import "@/components/home/sections.css";
+import "@/components/home/brand-story.css";
+import "@/components/home/vision-mission.css";
 
 const INTRO_SESSION_KEY = "bb-intro-complete";
 
 function SiteFooter() {
   const homepage = getHomepage();
-  const settings = getSettings();
   const footer = homepage.footer || {};
   const social = homepage.socialLinks || {};
+  const [liveSettings, setLiveSettings] = useState(getSettings());
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/site/settings", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => {
+        if (active && data && typeof data === "object") setLiveSettings(data);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const settings = liveSettings || getSettings();
 
   const brandName = settings.brandName || footer.brandName;
   const tagline = footer.tagline;
@@ -117,6 +136,8 @@ function HomeShell() {
       <main>
         <Hero />
         <Products />
+        <BrandStory />
+        <VisionMission />
         <WhyBeyond
           media={{
             type: "image",

@@ -25,6 +25,22 @@ function formatDate(value) {
   });
 }
 
+const PAYMENT_LABELS = {
+  cod: "Cash on Delivery",
+  card: "Card",
+  upi: "UPI",
+  netbanking: "Net Banking",
+  wallet: "Wallet",
+  online: "Online Payment",
+  emandate: "Auto-debit (eMandate)",
+  bank_transfer: "Bank Transfer",
+};
+
+function formatPaymentMethod(method) {
+  const label = PAYMENT_LABELS[method] || "Online Payment";
+  return label;
+}
+
 /**
  * Fetch the order via the admin API so we exercise the same auth + DB path
  * that the frontend calls — no direct DB reads in the studio UI.
@@ -95,6 +111,10 @@ export default async function StudioOrderDetailPage({ params }) {
               <span className="studio-table__status" data-status={order.paymentStatus}>
                 {order.paymentStatus || "pending"}
               </span>
+            </div>
+            <div className="studio-field">
+              <span className="studio-field__label">Payment method</span>
+              <p style={{ margin: 0 }}>{formatPaymentMethod(order.paymentMethod)}</p>
             </div>
             <div className="studio-field">
               <span className="studio-field__label">Shipping status</span>

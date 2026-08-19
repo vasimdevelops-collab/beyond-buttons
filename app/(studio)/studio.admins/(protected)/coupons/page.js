@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 const EMPTY_DRAFT = {
   code: "",
   type: "percent",
@@ -69,6 +71,9 @@ export default function StudioCouponsPage() {
     if (response.ok) {
       await refresh();
       setDraft(EMPTY_DRAFT);
+      toast.success("Coupon created");
+    } else {
+      toast.error("Unable to create coupon");
     }
   }
 
@@ -76,6 +81,9 @@ export default function StudioCouponsPage() {
     const response = await fetch(`/api/admin/coupons?id=${encodeURIComponent(couponId)}`, { method: "DELETE" });
     if (response.ok) {
       await refresh();
+      toast.success("Coupon deleted");
+    } else {
+      toast.error("Unable to delete coupon");
     }
   }
 

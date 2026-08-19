@@ -1,24 +1,27 @@
 /**
  * POST /api/media/upload
  *
- * Accepts a multipart/form-data file upload. Stores the binary as a base64
- * payload in the Media collection and returns a stable served URL
- * (/api/media/[id]) as the asset's `src` — so the rest of the app
- * never stores raw data-URIs in MongoDB.
+ * Accepts a multipart/form-data file upload.
+ *
+ * When Cloudinary is configured (CLOUDINARY_CLOUD_NAME + CLOUDINARY_API_KEY +
+ * CLOUDINARY_API_SECRET), the file is uploaded there and the returned secure
+ * URL is stored as `src`. When it is not configured, the file is stored as a
+ * base64 payload in the Media collection and served via /api/media/[id] —
+ * so the rest of the app never stores raw data-URIs in product records.
  *
  * Form fields:
  *   file     (required) — the uploaded file
  *   alt      (optional) — alt text
  *   folderId (optional) — media folder (default: "uncategorized")
  *
- * Max file size: 8 MB (enforced here; Next.js default body limit is 4 MB
- * for JSON but FormData uses streaming so it can be larger).
+ * Max file size: 8 MB.
  */
 
 import { NextResponse } from "next/server";
 
 import { requireAdmin } from "@/lib/admin/session";
 import { bootstrapDatabase, MediaModel } from "@/lib/database/register";
+import { getCloudinary, cloudinaryFolderFor } from "@/lib/media/cloudinary";
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8 MB
 
@@ -60,7 +63,6 @@ export async function POST(request) {
       );
     }
 
-    // Read the file as a Buffer and encode as base64 for storage.
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const base64 = buffer.toString("base64");
@@ -72,41 +74,68 @@ export async function POST(request) {
 
     await bootstrapDatabase();
 
-    // Store the data-URI in the `src` field temporarily. The GET /api/media/[id]
-    // endpoint serves it back as the correct MIME type so the rest of the app
-    // can use /api/media/[id] as a stable, browser-loadable URL.
-    const servedUrl = `/api/media/${id}`;
+    // ── Try Cloudinary first ─────────────────────────────────────────────
+    const cloudinary = getCloudinary();
+    let storedSrc = dataUri;
+    let cloudinaryId = "";
+    let width = null;
+    let height = null;
+
+    if (cloudinary) {
+      try {
+        const result = await cloudinary.uploader.upload(dataUri, {
+          folder: cloudinaryFolderFor(folderId),
+          resource_type: isVideo ? "video" : "image",
+          overwrite: false,
+        });
+        storedSrc = result.secure_url || storedSrc;
+        cloudinaryId = result.public_id || "";
+        width = Number(result.width) || null;
+        height = Number(result.height) || null;
+      } catch (cloudError) {
+        console.error(
+          "[media/upload] Cloudinary upload failed, falling back to DB storage:",
+          cloudError
+        );
+      }
+    }
+
+    // Consumers always get a stable URL: Cloudinary URL directly, or the
+    // served /api/media/[id] endpoint for base64 fallback assets.
+    const servedUrl = storedSrc.startsWith("data:")
+      ? `/api/media/${id}`
+      : storedSrc;
 
     const doc = await MediaModel.findOneAndUpdate(
       { id },
       {
         $set: {
           id,
-          // Store the raw data-URI so we can serve it from the DB.
-          // External callers always use the `servedUrl` — never this field directly.
-          src: dataUri,
+          src: storedSrc,
           alt,
           filename: file.name || "uploaded-file",
           mimeType,
-          width: null,
-          height: null,
+          width,
+          height,
           size: file.size,
           type: isVideo ? "video" : "image",
           folderId,
           folderLabel: FOLDER_LABELS[folderId] || "Uncategorized",
+          cloudinaryId: cloudinaryId || undefined,
+          cloudinaryVersion: undefined,
         },
       },
       { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
     ).lean().exec();
 
-    // Return the served URL as `src` — this is what the media library stores
-    // in product records and what the storefront renders.
     return NextResponse.json({
       id: doc.id,
       src: servedUrl,
       alt: doc.alt,
       filename: doc.filename,
       mimeType: doc.mimeType,
+      width: doc.width,
+      height: doc.height,
       size: doc.size,
       type: doc.type,
       folderId: doc.folderId,

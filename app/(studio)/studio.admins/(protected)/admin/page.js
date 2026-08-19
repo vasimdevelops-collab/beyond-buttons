@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 /**
  * Studio → Admin module.
  * Lets the single administrator update their own login email / password.
@@ -68,15 +70,18 @@ export default function StudioAdminPage() {
 
       if (!response.ok) {
         setNotice({ type: "error", text: data?.error || "Unable to update admin credentials." });
+        toast.error(data?.error || "Unable to update admin credentials");
         return;
       }
 
       setNotice({ type: "success", text: "Admin login updated. Use the new details next time you sign in." });
+      toast.success("Admin login updated");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch {
       setNotice({ type: "error", text: "Unable to update admin credentials." });
+      toast.error("Unable to update admin credentials");
     } finally {
       setSaving(false);
     }

@@ -37,6 +37,13 @@
   margin-left: 4px;
 }
 
+.contact-form__hint {
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-muted);
+}
+
 .contact-form__input {
   width: 100%;
   min-height: 48px;

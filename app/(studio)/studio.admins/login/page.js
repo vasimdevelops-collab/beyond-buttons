@@ -4,6 +4,8 @@ import { Suspense, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 
+import { toast } from "@/components/toast/toast-store";
+
 export default function StudioLoginPage() {
   return (
     <Suspense fallback={null}>
@@ -37,14 +39,17 @@ function StudioLoginForm() {
 
       if (!response.ok) {
         setError(data?.error || "Invalid email or password.");
+        toast.error(data?.error || "Invalid email or password");
         setSubmitting(false);
         return;
       }
 
+      toast.success("Welcome back");
       router.replace("/studio.admins");
       router.refresh();
     } catch {
       setError("Unable to sign in. Please try again.");
+      toast.error("Unable to sign in. Please try again.");
       setSubmitting(false);
     }
   }

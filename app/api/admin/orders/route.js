@@ -81,6 +81,7 @@ export async function GET(request) {
         total: Number(order.total || 0),
         currency: order.currency || "INR",
         paymentStatus: order.paymentStatus || "pending",
+        paymentMethod: order.paymentMethod || "cod",
         shippingStatus: order.shippingStatus || "pending",
         couponCode: order.couponCode || "",
         tracking: order.tracking || "",

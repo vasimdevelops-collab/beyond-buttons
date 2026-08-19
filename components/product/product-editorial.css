@@ -14,7 +14,7 @@
   position: relative;
   z-index: 1;
   margin-top: -clamp(48px, 8vh, 96px);
-  padding: clamp(120px, 18vh, 200px) 0 clamp(96px, 14vh, 168px);
+  padding: clamp(80px, 12vh, 140px) 0 clamp(72px, 11vh, 128px);
   background:
     radial-gradient(ellipse 55% 40% at 12% 18%, var(--wash-gold-soft), transparent 62%),
     radial-gradient(ellipse 48% 36% at 88% 78%, var(--wash-gold-soft), transparent 65%),
@@ -204,24 +204,18 @@
 
 .editorial-fabric__metrics {
   width: min(100% - 64px, var(--container));
+  max-width: 900px;
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(28px, 4vw, 48px) clamp(24px, 3vw, 40px);
+  border-top: 1px solid var(--hairline);
 }
 
 .editorial-fabric__metric {
-  position: relative;
   display: grid;
-  gap: 14px;
-  min-height: clamp(160px, 22vh, 220px);
-  padding: clamp(28px, 3vw, 40px) 0 clamp(24px, 2.5vw, 32px);
-}
-
-.editorial-fabric__index {
-  color: var(--goldLight);
-  font: 600 11px/1 var(--font-body);
-  letter-spacing: 0.22em;
+  grid-template-columns: minmax(150px, 0.85fr) 1.4fr;
+  align-items: baseline;
+  gap: clamp(20px, 4vw, 48px);
+  padding: clamp(20px, 2.6vw, 28px) 0;
+  border-bottom: 1px solid var(--hairline);
 }
 
 .editorial-fabric__metric dt {
@@ -234,19 +228,11 @@
 .editorial-fabric__metric dd {
   margin: 0;
   color: var(--offWhite);
-  font-family: var(--font-heading);
-  font-size: clamp(32px, 4vw, 52px);
-  font-weight: 500;
-  letter-spacing: 0.015em;
-  line-height: 1.1;
-}
-
-.editorial-fabric__line {
-  display: block;
-  width: 72px;
-  height: 1px;
-  margin-top: 8px;
-  background: linear-gradient(90deg, var(--gold), transparent);
+  font-family: var(--font-body);
+  font-size: clamp(16px, 1.6vw, 20px);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
 }
 
 /* ── Responsive ── */

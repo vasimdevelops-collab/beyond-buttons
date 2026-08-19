@@ -27,12 +27,12 @@
       {
         "id": "about",
         "label": "About",
-        "href": "#about"
+        "href": "/about"
       },
       {
         "id": "contact",
         "label": "Contact",
-        "href": "#contact"
+        "href": "/contact"
       }
     ],
     "utility": [
@@ -64,7 +64,7 @@
     "megaMenu": [
       {
         "id": "solid-t-shirts",
-        "label": "Solid T-Shirts",
+        "label": "Solid Shirts",
         "detail": "The signature collection",
         "href": "/category/solid-t-shirts"
       }
@@ -84,18 +84,18 @@
       },
       {
         "id": "solid-t-shirts",
-        "label": "Solid T-Shirts",
+        "label": "Solid Shirts",
         "href": "/category/solid-t-shirts"
       },
       {
         "id": "about",
         "label": "About",
-        "href": "#about"
+        "href": "/about"
       },
       {
         "id": "contact",
         "label": "Contact",
-        "href": "#contact"
+        "href": "/contact"
       }
     ],
     "actions": [
@@ -131,15 +131,15 @@
       "title": "Shop",
       "links": [
         {
-          "label": "Solid T-Shirts",
+          "label": "Solid Shirts",
           "href": "/category/solid-t-shirts"
         },
         {
-          "label": "Black Solid T-Shirt",
+          "label": "Beyond One",
           "href": "/product/black-solid-t-shirt"
         },
         {
-          "label": "White Solid T-Shirt",
+          "label": "White Solid Shirt",
           "href": "/product/white-solid-t-shirt"
         }
       ]
@@ -154,11 +154,11 @@
         },
         {
           "label": "About",
-          "href": "#about"
+          "href": "/about"
         },
         {
           "label": "Contact",
-          "href": "#contact"
+          "href": "/contact"
         }
       ]
     },
@@ -167,12 +167,12 @@
       "title": "Support",
       "links": [
         {
-          "label": "Shipping",
-          "href": "#shipping"
+          "label": "Shipping & Returns",
+          "href": "/shipping"
         },
         {
-          "label": "Returns",
-          "href": "#returns"
+          "label": "Contact Us",
+          "href": "/contact"
         }
       ]
     }

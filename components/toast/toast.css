@@ -1,0 +1,109 @@
+/* ============================================================
+   TOAST NOTIFICATIONS — small premium feedback pop-ups
+   ============================================================ */
+
+.bb-toast-viewport {
+  position: fixed;
+  right: clamp(14px, 3vw, 28px);
+  bottom: clamp(14px, 3vw, 28px);
+  z-index: 12000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.bb-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+  max-width: min(90vw, 360px);
+  padding: 13px 14px;
+  border: 1px solid var(--hairline-gold-strong);
+  border-radius: 14px;
+  background: rgba(14, 12, 8, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.4);
+  color: var(--white);
+  font: 500 13px/1.4 var(--font-body);
+  animation: bb-toast-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bb-toast.is-leaving {
+  animation: bb-toast-out 0.22s ease forwards;
+}
+
+.bb-toast__icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--wash-gold);
+  color: var(--gold);
+}
+
+.bb-toast--error {
+  border-color: var(--color-error, rgba(192, 57, 43, 0.5));
+}
+
+.bb-toast--error .bb-toast__icon {
+  background: var(--color-error-bg, rgba(192, 57, 43, 0.12));
+  color: var(--color-error, #c0392b);
+}
+
+.bb-toast--info .bb-toast__icon {
+  background: transparent;
+}
+
+.bb-toast__message {
+  margin: 0;
+}
+
+.bb-toast__close {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 250ms ease;
+}
+
+.bb-toast__close:hover,
+.bb-toast__close:focus-visible {
+  color: var(--white);
+}
+
+@keyframes bb-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bb-toast-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bb-toast {
+    animation: none;
+  }
+}

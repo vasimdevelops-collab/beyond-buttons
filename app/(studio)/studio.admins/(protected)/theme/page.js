@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 const DEFAULT_THEME = {
   defaultTheme: "light",
   accent: "#B08D57",
@@ -45,9 +47,11 @@ export default function StudioThemePage() {
         const data = await response.json();
         setTheme({ ...DEFAULT_THEME, ...data });
         setSavedMessage("Theme settings saved successfully.");
+        toast.success("Theme settings saved");
       }
     } catch {
       setSavedMessage("Unable to save theme.");
+      toast.error("Unable to save theme");
     }
   }
 

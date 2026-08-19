@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 import { SIZE_KEYS } from "./pricing-panel";
 
 const COLOR_STATUS_OPTIONS = [
@@ -19,8 +21,12 @@ async function uploadProductImage(file) {
     method: "POST",
     body: formData,
   });
-  if (!response.ok) throw new Error("Upload failed");
+  if (!response.ok) {
+    toast.error("Image upload failed");
+    throw new Error("Upload failed");
+  }
   const data = await response.json();
+  toast.success("Image uploaded");
   return {
     id: data.id || `media-${Date.now()}`,
     src: data.src || data.url,

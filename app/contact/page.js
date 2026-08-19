@@ -1,75 +1,83 @@
 import Link from "next/link";
 
 import Navbar from "@/components/layout/Navbar";
-import ContactForm from "@/components/contact/ContactForm";
+import { getSettingsServer } from "@/lib/data";
 import "@/components/about/about.css";
-import "@/components/contact/contact-form.css";
 
-export default function ContactPage() {
+export const metadata = {
+  title: "Contact — Beyond Buttons",
+  description: "Get in touch with Beyond Buttons. We reply within 72 hours.",
+};
+
+export default async function ContactPage() {
+  const settings = await getSettingsServer();
+  const email = settings.email || "hello@beyondbuttons.in";
+  const whatsapp = settings.whatsapp || "";
+  const supportHours = settings.supportHours || "Mon - Sat · 10:00 AM to 7:00 PM";
+  const instagram = settings.instagram
+    ? `@${settings.instagram.replace(/^@/, "").split("/").pop()}`
+    : "@beyondbuttons";
+
   return (
     <>
       <Navbar />
 
-      <main className="about-page">
-        <section className="about-page__hero">
-          <div>
-            <p className="about-page__eyebrow">Contact</p>
+      <main className="bb-contact">
+        {/* ── Hero — full-bleed, borderless ─────────────────────────── */}
+        <section className="bb-contact__hero">
+          <div className="bb-contact__inner">
+            <p className="bb-about__eyebrow">Contact</p>
             <h1>Let&apos;s talk essentials.</h1>
-            <p>
+            <p className="bb-contact__intro">
               For bespoke wardrobe questions, first-time orders, styling guidance, or
-              wholesale conversations, we&apos;re here to help.
+              wholesale conversations — we&apos;re here to help.
             </p>
           </div>
+        </section>
 
-          <div className="about-page__meta">
-            <div>
-              <span>Email</span>
-              <small>hello</small>
-            </div>
-            <div>
-              <span>Phone</span>
-              <small>WhatsApp</small>
-            </div>
-            <div>
-              <span>Reply</span>
-              <small>Within 24h</small>
+        {/* ── Primary — email + 72h (client requirement) ────────────── */}
+        <section className="bb-contact__primary">
+          <div className="bb-contact__inner">
+            <div className="bb-contact__card">
+              <p className="bb-about__section-tag">Write to us</p>
+              <a className="bb-contact__email" href={`mailto:${email}`}>
+                {email}
+              </a>
+              <p className="bb-contact__reply">We reply within 72 hours.</p>
+              <p className="bb-contact__assessment">
+                For a quick assessment, please share your personal phone number and
+                email address in your message.
+              </p>
+              <div className="bb-about__cta-row">
+                <a href={`mailto:${email}`} className="about-page__cta about-page__cta--primary">
+                  Email us
+                </a>
+                <Link href="/shop" className="about-page__cta">
+                  Shop now
+                </Link>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="about-page__section">
-          <h2>Send us a message</h2>
-          <ContactForm />
-        </section>
-
-        <section className="about-page__section" style={{ marginTop: "24px" }}>
-          <h2>Other ways to reach us</h2>
-          <div className="about-page__principles">
-            <article>
-              <h3>Email</h3>
-              <p>hello@beyondbuttons.in</p>
-            </article>
-            <article>
-              <h3>Phone</h3>
-              <p>+91 98765 43210</p>
-            </article>
-            <article>
-              <h3>Instagram</h3>
-              <p>@beyondbuttons</p>
-            </article>
-            <article>
-              <h3>Business hours</h3>
-              <p>Mon - Sat · 10:00 AM to 7:00 PM</p>
-            </article>
-          </div>
-
-          <div className="about-page__cta-row">
-            <a href="mailto:hello@beyondbuttons.in" className="about-page__cta about-page__cta--primary">
-              Email us
-            </a>
-            <Link href="/shop" className="about-page__cta">
-              Shop now
-            </Link>
+        {/* ── Other ways to reach us — hairline grid ────────────────── */}
+        <section className="bb-contact__other">
+          <div className="bb-contact__inner">
+            <p className="bb-about__section-tag">Other ways to reach us</p>
+            <div className="bb-contact__grid">
+              <div className="bb-contact__tile">
+                <b>WhatsApp</b>
+                <p>{whatsapp || "Available on request"}</p>
+              </div>
+              <div className="bb-contact__tile">
+                <b>Instagram</b>
+                <p>{instagram}</p>
+              </div>
+              <div className="bb-contact__tile">
+                <b>Business hours</b>
+                <p>{supportHours}</p>
+              </div>
+            </div>
           </div>
         </section>
       </main>

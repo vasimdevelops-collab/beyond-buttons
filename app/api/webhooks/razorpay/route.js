@@ -7,7 +7,7 @@ import { sendTransactionalEmail } from "@/lib/email/smtp";
 
 const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
 
-async function updateOrderPaymentStatus(orderId, paymentId, status, signature) {
+async function updateOrderPaymentStatus(orderId, paymentId, status, signature, paymentMethod) {
   await bootstrapDatabase();
 
   const order = await OrderModel.findOne({ id: orderId }).lean().exec();
@@ -20,15 +20,20 @@ async function updateOrderPaymentStatus(orderId, paymentId, status, signature) {
     return { order, alreadyProcessed: true };
   }
 
+  const update = {
+    paymentStatus: status,
+    paymentId,
+    paymentSignature: signature,
+    updatedAt: new Date().toISOString(),
+  };
+  if (paymentMethod) {
+    update.paymentMethod = paymentMethod;
+  }
+
   const updated = await OrderModel.findOneAndUpdate(
     { id: orderId },
     {
-      $set: {
-        paymentStatus: status,
-        paymentId,
-        paymentSignature: signature,
-        updatedAt: new Date().toISOString(),
-      },
+      $set: update,
       $push: {
         statusHistory: {
           status: status === "paid" ? "payment_confirmed" : "payment_failed",
@@ -185,7 +190,7 @@ export async function POST(request) {
       }
 
       try {
-        const { order, alreadyProcessed } = await updateOrderPaymentStatus(orderId, paymentId, "paid", signature);
+        const { order, alreadyProcessed } = await updateOrderPaymentStatus(orderId, paymentId, "paid", signature, payment.method);
 
         if (!alreadyProcessed) {
           await sendPaymentConfirmationEmail(order);

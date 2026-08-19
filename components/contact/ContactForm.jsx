@@ -90,7 +90,7 @@ export default function ContactForm() {
       }
 
       setStatus("success");
-      setSubmitMessage(data.message || "Thanks! We'll get back to you within 24 hours.");
+      setSubmitMessage(data.message || "Thanks! We'll get back to you within 72 hours.");
       setFormData(INITIAL_STATE);
     } catch (err) {
       setStatus("error");
@@ -143,7 +143,7 @@ export default function ContactForm() {
 
         <div className="contact-form__field">
           <label htmlFor="phone" className="contact-form__label">
-            Phone (WhatsApp)
+            Phone (WhatsApp) <span className="contact-form__hint">— for quick assessment</span>
           </label>
           <input
             type="tel"

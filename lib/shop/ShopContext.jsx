@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 const ShopContext = createContext(null);
 
 const CART_STORAGE_KEY = "bb-cart";
@@ -86,8 +88,8 @@ export function ShopProvider({ children }) {
   const clearCart = () => setCart([]);
 
   const toggleWishlist = (product) => {
+    const exists = isInWishlist(product.id);
     setWishlist((prev) => {
-      const exists = prev.find((item) => item.id === product.id);
       if (exists) {
         return prev.filter((item) => item.id !== product.id);
       }
@@ -102,6 +104,12 @@ export function ShopProvider({ children }) {
         },
       ];
     });
+
+    if (exists) {
+      toast.info("Removed from wishlist");
+    } else {
+      toast.success("Added to wishlist");
+    }
   };
 
   const isInWishlist = (productId) => {

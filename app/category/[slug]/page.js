@@ -1,24 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
 import Navbar from "@/components/layout/Navbar";
+import CategoryCatalog from "@/components/category/CategoryCatalog";
 import {
   getCategoriesServer,
   getCategoryBySlugServer,
   getProductsServer,
   getSettingsServer,
 } from "@/lib/data";
-import "@/components/home/sections.css";
-
-function formatMoney(value) {
-  const amount = Number(value || 0);
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
+import "@/components/category/category.css";
 
 export async function generateStaticParams() {
   const categories = await getCategoriesServer();
@@ -46,6 +37,9 @@ export default async function CategoryPage({ params }) {
     notFound();
   }
 
+  // Match by the canonical, unchanged category identifier (slug/id) — never by a
+  // display label string that copy edits can rename. Products reattached to
+  // `solid-t-shirts` by scripts/sync-catalog-data.mjs (step 9).
   const products = (await getProductsServer()).filter(
     (product) => product.categorySlug === category.slug || product.categoryId === category.id
   );
@@ -53,61 +47,21 @@ export default async function CategoryPage({ params }) {
   return (
     <>
       <Navbar />
-      <main className="category-landing">
-        <div className="category-landing__container">
-          <Link href="/" className="category-landing__back">
-            <ArrowLeft size={15} strokeWidth={1.5} aria-hidden="true" />
-            Back to home
-          </Link>
+      <main className="category-catalog-page">
+        <div className="category-catalog-page__container">
+          <nav className="category-catalog-page__breadcrumb" aria-label="Breadcrumb">
+            <Link href="/">Home</Link>
+            <span aria-hidden="true">/</span>
+            <span>{category.name}</span>
+          </nav>
 
-          <p className="category-landing__eyebrow">{category.name}</p>
-          <h1 className="category-landing__title">{category.title || category.name}</h1>
-          <span className="category-landing__divider" aria-hidden="true" />
+          <p className="category-catalog-page__eyebrow">{category.name}</p>
+          <h1 className="category-catalog-page__title">{category.title || category.name}</h1>
           {category.description ? (
-            <p className="category-landing__tagline">{category.description}</p>
+            <p className="category-catalog-page__tagline">{category.description}</p>
           ) : null}
 
-          {products.length > 0 ? (
-            <section className="shop-page__grid" aria-label={`${category.name} collection`}>
-              {products.map((product) => {
-                const media = product.gallery?.[0]?.src || "/images/logo.png";
-                const price = Number(product.price || 0);
-                const comparePrice = Number(product.comparePrice || 0);
-                return (
-                  <article key={product.id || product.slug} className="shop-product-card">
-                    <Link href={`/product/${product.slug}`} className="shop-product-card__media" aria-label={`View ${product.name}`}>
-                      <img src={media} alt={product.name} />
-                    </Link>
-
-                    <div className="shop-product-card__body">
-                      <div className="shop-product-card__meta">
-                        <span>{product.category || category.name}</span>
-                        <span>{product.colors?.length || 1} colors</span>
-                      </div>
-
-                      <h2>
-                        <Link href={`/product/${product.slug}`}>{product.name}</Link>
-                      </h2>
-
-                      <div className="shop-product-card__price-row">
-                        <strong>{formatMoney(price)}</strong>
-                        {comparePrice > price ? <span>{formatMoney(comparePrice)}</span> : null}
-                      </div>
-
-                      <Link href={`/product/${product.slug}`} className="shop-product-card__button">
-                        View Details
-                      </Link>
-                    </div>
-                  </article>
-                );
-              })}
-            </section>
-          ) : (
-            <div className="studio-table__empty" style={{ marginTop: "1rem" }}>
-              <p className="studio-table__empty-title">No products in this collection yet</p>
-              <p className="studio-table__empty-copy">Create products in the admin panel and they will appear here automatically.</p>
-            </div>
-          )}
+          <CategoryCatalog category={category} products={products} />
         </div>
       </main>
     </>

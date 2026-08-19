@@ -191,7 +191,7 @@ export default function ThemePage() {
                 Beyond Buttons
               </h2>
               <p style={{ margin: "0 0 24px", color: formData.textColor }}>
-                Premium solid t-shirts crafted with attention to every detail. Experience luxury in simplicity.
+                Premium solid shirts crafted with attention to every detail. Experience luxury in simplicity.
               </p>
               <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
                 <button

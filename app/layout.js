@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { ThemeInit } from "@/components/theme/ThemeInit";
 import { ShopProvider } from "@/lib/shop/ShopContext";
 import { CartProvider } from "@/lib/shop/commerce";
+import ToastViewport from "@/components/toast/ToastViewport";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({ children }) {
         <CartProvider>
           <ShopProvider>
             <ThemeProvider>{children}</ThemeProvider>
+            <ToastViewport />
           </ShopProvider>
         </CartProvider>
       </body>

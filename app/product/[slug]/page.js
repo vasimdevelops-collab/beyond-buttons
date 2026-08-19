@@ -55,7 +55,6 @@ export default async function ProductPage({ params }) {
           fabric={product.fabric}
         />
         <QuickHighlights
-          fabric={source.fabric}
           highlights={source.highlights}
           fit={fit}
         />

@@ -7,6 +7,8 @@ import { useParams, useRouter } from "next/navigation";
 import PricingPanel, { createEmptyPricing } from "./pricing-panel";
 import VariantsPanel, { createEmptyColor } from "./variants-panel";
 
+import { toast } from "@/components/toast/toast-store";
+
 const PRODUCTS_PATH = "/studio.admins/products";
 
 const EDITOR_TABS = [
@@ -192,6 +194,9 @@ export default function StudioProductEditorPage() {
 
     if (response.ok) {
       router.push(PRODUCTS_PATH);
+      toast.success("Product deleted");
+    } else {
+      toast.error("Unable to delete product");
     }
   }
 
@@ -231,6 +236,7 @@ export default function StudioProductEditorPage() {
     if (response.ok) {
       const saved = await response.json();
       setDirty(false);
+      toast.success(isNew ? "Product created" : "Product saved");
       if (isNew) {
         setSavedNotice({
           type: "success",
@@ -254,6 +260,7 @@ export default function StudioProductEditorPage() {
         // ignore
       }
       setSavedNotice({ type: "error", title: message, name: "", href: null });
+      toast.error(message);
     }
   }
 

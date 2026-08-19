@@ -14,6 +14,21 @@ function toSlug(value = "") {
     .replace(/^-|-$/g, "");
 }
 
+function formatPaymentMethod(method, status) {
+  const labels = {
+    cod: "Cash on Delivery",
+    card: "Card",
+    upi: "UPI",
+    netbanking: "Net Banking",
+    wallet: "Wallet",
+    online: "Online Payment",
+    emandate: "Auto-debit (eMandate)",
+    bank_transfer: "Bank Transfer",
+  };
+  const label = labels[method] || "Online Payment";
+  return status === "paid" ? `${label} (Paid)` : label;
+}
+
 function normalizeAddress(raw = {}) {
   return {
     fullName: raw.fullName || "",
@@ -93,6 +108,7 @@ export async function GET(request) {
         orderNumber: order.orderNumber,
         total: Number(order.total || 0),
         paymentStatus: order.paymentStatus,
+        paymentMethod: order.paymentMethod || "cod",
         shippingStatus: order.shippingStatus,
         createdAt: order.createdAt,
         itemCount: Array.isArray(order.items) ? order.items.length : 0,
@@ -326,6 +342,7 @@ export async function POST(request) {
       currency: body?.currency || "INR",
       couponCode: couponCode || "",
       paymentStatus: initialPaymentStatus,
+      paymentMethod: paymentMethodId === "cod" ? "cod" : "online",
       shippingStatus: "pending",
       tracking: "",
       courier: "",
@@ -517,7 +534,7 @@ function generateOrderConfirmationEmail(order, items, body) {
 
             <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #e5e5e5;">
               <h2 style="margin: 0 0 16px; font-size: 18px; font-weight: 600; color: #111;">Payment Method</h2>
-              <p style="margin: 0; font-size: 14px; color: #111;">${order.paymentStatus === "paid" ? "Online Payment (Paid)" : "Cash on Delivery"}</p>
+              <p style="margin: 0; font-size: 14px; color: #111;">${formatPaymentMethod(order.paymentMethod, order.paymentStatus)}</p>
             </div>
           </td>
         </tr>

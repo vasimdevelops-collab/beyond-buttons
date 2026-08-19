@@ -2,14 +2,38 @@
 
 import { useEffect, useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 const DEFAULT_SETTINGS = {
   brandName: "Beyond Buttons",
   currency: "INR",
   locale: "en-IN",
   email: "hello@beyondbuttons.in",
-  phone: "+91 98765 43210",
+  phone: "",
+  whatsapp: "",
+  address: "",
+  instagram: "",
+  facebook: "",
+  youtube: "",
   supportHours: "Mon-Sat, 10am-7pm",
+  metaTitle: "Beyond Buttons",
+  metaDescription: "Luxury Solid Shirt Brand",
+  defaultTheme: "dark",
 };
+
+function Field({ label, value, onChange, type = "text", hint }) {
+  return (
+    <label className="studio-field">
+      <span className="studio-field__label">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+      {hint ? <small className="studio-field__hint">{hint}</small> : null}
+    </label>
+  );
+}
 
 export default function StudioSettingsPage() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -32,6 +56,10 @@ export default function StudioSettingsPage() {
     load();
   }, []);
 
+  function patch(payload) {
+    setSettings((current) => ({ ...current, ...payload }));
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     try {
@@ -43,11 +71,16 @@ export default function StudioSettingsPage() {
 
       if (response.ok) {
         setSavedMessage("Store settings saved successfully.");
+        toast.success("Store settings saved");
         const data = await response.json();
         setSettings({ ...DEFAULT_SETTINGS, ...data });
+      } else {
+        setSavedMessage("Unable to save settings.");
+        toast.error("Unable to save settings");
       }
     } catch {
       setSavedMessage("Unable to save settings.");
+      toast.error("Unable to save settings");
     }
   }
 
@@ -75,35 +108,44 @@ export default function StudioSettingsPage() {
         </header>
 
         <div className="studio-section__fields">
-          <label className="studio-field">
-            <span className="studio-field__label">Brand name</span>
-            <input value={settings.brandName} onChange={(event) => setSettings((current) => ({ ...current, brandName: event.target.value }))} />
-          </label>
+          <Field label="Brand name" value={settings.brandName} onChange={(value) => patch({ brandName: value })} />
+          <Field label="Currency" value={settings.currency} onChange={(value) => patch({ currency: value })} />
+          <Field label="Locale" value={settings.locale} onChange={(value) => patch({ locale: value })} />
+          <Field label="Default theme" value={settings.defaultTheme} onChange={(value) => patch({ defaultTheme: value })} hint="dark or light" />
+        </div>
 
-          <label className="studio-field">
-            <span className="studio-field__label">Currency</span>
-            <input value={settings.currency} onChange={(event) => setSettings((current) => ({ ...current, currency: event.target.value }))} />
-          </label>
+        <header className="studio-section__header" style={{ marginTop: "2rem" }}>
+          <h2 className="studio-section__title">Contact details</h2>
+          <p className="studio-section__copy">
+            These appear on the contact page, footer, and order notifications.
+          </p>
+        </header>
 
-          <label className="studio-field">
-            <span className="studio-field__label">Locale</span>
-            <input value={settings.locale} onChange={(event) => setSettings((current) => ({ ...current, locale: event.target.value }))} />
-          </label>
+        <div className="studio-section__fields">
+          <Field label="Email" type="email" value={settings.email} onChange={(value) => patch({ email: value })} />
+          <Field label="Phone" value={settings.phone} onChange={(value) => patch({ phone: value })} />
+          <Field label="WhatsApp" value={settings.whatsapp} onChange={(value) => patch({ whatsapp: value })} hint="Full number or link" />
+          <Field label="Address" value={settings.address} onChange={(value) => patch({ address: value })} />
+          <Field label="Support hours" value={settings.supportHours} onChange={(value) => patch({ supportHours: value })} hint="e.g. Mon-Sat, 10am-7pm" />
+        </div>
 
-          <label className="studio-field">
-            <span className="studio-field__label">Email</span>
-            <input type="email" value={settings.email} onChange={(event) => setSettings((current) => ({ ...current, email: event.target.value }))} />
-          </label>
+        <header className="studio-section__header" style={{ marginTop: "2rem" }}>
+          <h2 className="studio-section__title">Social media</h2>
+        </header>
 
-          <label className="studio-field">
-            <span className="studio-field__label">Phone</span>
-            <input value={settings.phone} onChange={(event) => setSettings((current) => ({ ...current, phone: event.target.value }))} />
-          </label>
+        <div className="studio-section__fields">
+          <Field label="Instagram" value={settings.instagram} onChange={(value) => patch({ instagram: value })} />
+          <Field label="Facebook" value={settings.facebook} onChange={(value) => patch({ facebook: value })} />
+          <Field label="YouTube" value={settings.youtube} onChange={(value) => patch({ youtube: value })} />
+        </div>
 
-          <label className="studio-field studio-field--full">
-            <span className="studio-field__label">Support hours</span>
-            <input value={settings.supportHours} onChange={(event) => setSettings((current) => ({ ...current, supportHours: event.target.value }))} />
-          </label>
+        <header className="studio-section__header" style={{ marginTop: "2rem" }}>
+          <h2 className="studio-section__title">SEO & metadata</h2>
+        </header>
+
+        <div className="studio-section__fields">
+          <Field label="Meta title" value={settings.metaTitle} onChange={(value) => patch({ metaTitle: value })} />
+          <Field label="Meta description" value={settings.metaDescription} onChange={(value) => patch({ metaDescription: value })} />
         </div>
 
         <div className="studio-editor__bar">

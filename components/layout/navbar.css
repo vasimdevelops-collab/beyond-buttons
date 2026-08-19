@@ -200,17 +200,16 @@ button.luxury-navbar__link {
   top: 100%;
   right: 0;
   left: 0;
+  z-index: 10;
   visibility: hidden;
   width: 100vw;
   color: var(--offWhite);
   background:
     linear-gradient(120deg, var(--wash-gold-soft), transparent 42%),
-    var(--surface-panel);
+    var(--surface-panel-solid);
   border-top: 1px solid var(--hairline-gold);
   border-bottom: 1px solid var(--hairline-gold-strong);
   box-shadow: 0 28px 60px var(--shadow-strong);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
   will-change: transform, opacity;
 }
 

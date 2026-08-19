@@ -1,8 +1,19 @@
 import { sendTransactionalEmail } from "@/lib/email/smtp";
 import { bootstrapDatabase } from "@/lib/database/register";
-import { ContactModel } from "@/lib/database/models";
+import { ContactModel, SettingsModel } from "@/lib/database/models";
 
 const REQUIRED_FIELDS = ["name", "email", "subject", "message"];
+
+async function resolveContactEmail() {
+  try {
+    await bootstrapDatabase();
+    const doc = await SettingsModel.findOne({ id: "default" }).lean().exec();
+    if (doc?.email) return doc.email;
+  } catch {
+    // ignore and fall back
+  }
+  return "hello@beyondbuttons.in";
+}
 
 export async function POST(request) {
   try {
@@ -57,8 +68,9 @@ export async function POST(request) {
     `;
 
     try {
+      const toEmail = await resolveContactEmail();
       await sendTransactionalEmail({
-        to: "hello@beyondbuttons.in",
+        to: toEmail,
         subject: `[Beyond Buttons Contact] ${subjectLabel} — ${body.name}`,
         html: emailHtml,
         text: `New contact form submission\n\nName: ${body.name}\nEmail: ${body.email}\nPhone: ${body.phone || "—"}\nSubject: ${subjectLabel}\n\nMessage:\n${body.message}`,
@@ -69,7 +81,7 @@ export async function POST(request) {
     }
 
     return Response.json({ 
-      message: "Thanks! We'll get back to you within 24 hours.",
+      message: "Thanks! We'll get back to you within 72 hours.",
       id: contact._id 
     });
   } catch (err) {

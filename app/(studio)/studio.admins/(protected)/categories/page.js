@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 const EMPTY_DRAFT = {
   name: "",
   slug: "",
@@ -61,6 +63,9 @@ export default function StudioCategoriesPage() {
       await refresh();
       setDraft(EMPTY_DRAFT);
       setEditingId(null);
+      toast.success(editingId ? "Category updated" : "Category created");
+    } else {
+      toast.error("Unable to save category");
     }
   }
 
@@ -68,10 +73,13 @@ export default function StudioCategoriesPage() {
     const response = await fetch(`/api/admin/categories?id=${encodeURIComponent(categoryId)}`, { method: "DELETE" });
     if (response.ok) {
       await refresh();
+      toast.success("Category deleted");
       if (editingId === categoryId) {
         setEditingId(null);
         setDraft(EMPTY_DRAFT);
       }
+    } else {
+      toast.error("Unable to delete category");
     }
   }
 

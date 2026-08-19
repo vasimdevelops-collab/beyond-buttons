@@ -21,7 +21,7 @@ function formatLabel(key = "") {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function collectHighlights({ fabric, highlights, fit }) {
+function collectHighlights({ highlights, fit }) {
   const cards = [];
 
   if (Array.isArray(highlights)) {
@@ -45,16 +45,9 @@ function collectHighlights({ fabric, highlights, fit }) {
     });
   }
 
-  if (fabric && typeof fabric === "object") {
-    Object.entries(fabric).forEach(([key, value]) => {
-      if (!hasValue(value)) return;
-      const label = formatLabel(key);
-      if (cards.some((card) => card.label === label && card.value === String(value).trim())) {
-        return;
-      }
-      cards.push({ label, value: String(value).trim() });
-    });
-  }
+  // NOTE: fabric composition is intentionally NOT merged here — it is shown
+  // once, cleanly, in "The Fabric" section on the same page. Only unique
+  // details (fit, product highlights) are collected below.
 
   const fitType =
     (typeof fit === "string" && fit) ||
@@ -73,9 +66,9 @@ function collectHighlights({ fabric, highlights, fit }) {
   return cards;
 }
 
-export default function QuickHighlights({ fabric = null, highlights = null, fit = null }) {
+export default function QuickHighlights({ highlights = null, fit = null }) {
   const rootRef = useRef(null);
-  const cards = collectHighlights({ fabric, highlights, fit });
+  const cards = collectHighlights({ highlights, fit });
 
   useLayoutEffect(() => {
     const root = rootRef.current;

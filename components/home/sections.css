@@ -1,9 +1,9 @@
 /* ============================================================
-   HOMEPAGE — Solid T-Shirts category + products + footer
+   HOMEPAGE — Solid Shirts category + products + footer
    Motion (hover, reveal, lift) is GSAP-driven from components.
    ============================================================ */
 
-/* ── Categories (Solid T-Shirts → product explore cards) ── */
+/* ── Categories (Solid Shirts → product explore cards) ── */
 
 .categories {
   position: relative;
@@ -776,7 +776,7 @@
 }
 
 .category-landing__container {
-  width: min(100% - 48px, 720px);
+  width: min(100% - 48px, 1500px);
   margin-inline: auto;
   padding: clamp(140px, 20vh, 200px) 0 clamp(96px, 12vh, 140px);
 }
@@ -816,6 +816,7 @@
   font-size: clamp(36px, 5vw, 64px);
   letter-spacing: 0.02em;
   color: var(--offWhite);
+  max-width: 700px;
   margin: 0 0 20px;
 }
 

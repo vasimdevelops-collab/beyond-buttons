@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
+import { toast } from "@/components/toast/toast-store";
+
 const PRODUCTS_PATH = "/studio.admins/products";
 
 const STATUS_FILTERS = [
@@ -80,6 +82,9 @@ export default function StudioProductsPage() {
 
     if (response.ok) {
       await refreshProducts();
+      toast.success("Product deleted");
+    } else {
+      toast.error("Unable to delete product");
     }
   }
 

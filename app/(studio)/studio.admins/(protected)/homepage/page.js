@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 const DEFAULT_FORM = {
   label: "Beyond Buttons",
   scrollLabel: "Scroll",
   media: { type: "image", src: "/images/homeback.jpeg", alt: "Beyond Buttons campaign" },
-  headlineLines: ["We don't sell shirts.", "We define presence."],
+  headlineLines: ["We define presence.", "The perfect solid shirt."],
   subtitleLines: ["Crafted with premium fabrics,", "timeless tailoring,", "and confidence in every stitch."],
   buttons: {
     primary: { label: "Shop Collection", href: "/shop" },
@@ -126,8 +128,10 @@ export default function StudioHomepagePage() {
       }
 
       setSavedMessage("Homepage hero saved successfully.");
+      toast.success("Homepage hero saved");
     } catch {
       setSavedMessage("Unable to save homepage right now.");
+      toast.error("Unable to save homepage");
     } finally {
       setSaving(false);
     }

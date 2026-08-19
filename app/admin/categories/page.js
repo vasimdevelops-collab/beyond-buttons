@@ -306,14 +306,14 @@ export default function CategoriesPage() {
                   onChange={handleChange}
                   error={errors.name}
                   required
-                  placeholder="T-Shirts"
+                  placeholder="Shirts"
                 />
                 <Input
                   label="Slug"
                   name="slug"
                   value={formData.slug}
                   onChange={handleChange}
-                  placeholder="t-shirts"
+                  placeholder="shirts"
                 />
               </div>
 

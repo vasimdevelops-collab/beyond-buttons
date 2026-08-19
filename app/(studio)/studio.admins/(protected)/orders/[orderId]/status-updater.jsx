@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { toast } from "@/components/toast/toast-store";
+
 const PAYMENT_OPTIONS = ["pending", "paid", "failed", "refunded"];
 const SHIPPING_OPTIONS = ["pending", "processing", "shipped", "delivered", "cancelled"];
 
@@ -37,10 +39,12 @@ export function OrderStatusUpdater({ order }) {
       }
 
       setMessage({ text: "Order updated successfully.", isError: false });
+      toast.success("Order updated");
       // Refresh the server component data without a full navigation.
       router.refresh();
     } catch (err) {
       setMessage({ text: err?.message || "Unable to update order.", isError: true });
+      toast.error(err?.message || "Unable to update order");
     } finally {
       setSaving(false);
     }

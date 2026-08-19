@@ -2,38 +2,417 @@
   {
     "id": "black-solid-t-shirt",
     "slug": "black-solid-t-shirt",
-    "name": "Black Solid T-Shirt",
-    "shortName": "Black Solid T-Shirt",
-    "category": "Solid T-Shirts",
+    "name": "Beyond One",
+    "shortName": "Beyond One",
+    "category": "Solid Shirts",
     "price": 1499,
     "comparePrice": 1999,
-    "brandStatement": "A disciplined black tee — clean lines, intentional weight, presence without distraction.",
+    "brandStatement": "Beyond One is the signature solid shirt — clean lines, intentional weight, presence without distraction.",
     "gallery": [
       {
         "src": "/images/images%20(3).jfif",
-        "alt": "Black Solid T-Shirt front view",
+        "alt": "Beyond One front view",
         "type": "image"
       },
       {
         "src": "/images/images.jfif",
-        "alt": "Solid T-Shirt studio view",
+        "alt": "Beyond One studio view",
         "type": "image"
       },
       {
         "src": "/images/images%20(1).jfif",
-        "alt": "Solid T-Shirt detail view",
+        "alt": "Beyond One detail view",
         "type": "image"
       }
     ],
     "colors": [
       {
-        "name": "Black",
+        "name": "Jet Black",
         "hex": "#0A0A0A",
         "gallery": [
           {
             "src": "/images/images%20(3).jfif",
-            "alt": "Black Solid T-Shirt front view",
+            "alt": "Jet Black — Beyond One",
             "type": "image"
+          }
+        ],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-JET-BLACK-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-JET-BLACK-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-JET-BLACK-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-JET-BLACK-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-JET-BLACK-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Pure White",
+        "hex": "#F7F7F5",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-PURE-WHITE-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-PURE-WHITE-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-PURE-WHITE-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-PURE-WHITE-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-PURE-WHITE-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Oat",
+        "hex": "#EDE6DA",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-OAT-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-OAT-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-OAT-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-OAT-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-OAT-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Stone Grey",
+        "hex": "#9A9A94",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-STONE-GREY-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-STONE-GREY-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-STONE-GREY-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-STONE-GREY-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-STONE-GREY-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Charcoal",
+        "hex": "#2B2B2B",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-CHARCOAL-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-CHARCOAL-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-CHARCOAL-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-CHARCOAL-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-CHARCOAL-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Navy",
+        "hex": "#1C2B4A",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-NAVY-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-NAVY-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-NAVY-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-NAVY-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-NAVY-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Oxford Blue",
+        "hex": "#34558B",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-OXFORD-BLUE-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-OXFORD-BLUE-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-OXFORD-BLUE-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-OXFORD-BLUE-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-OXFORD-BLUE-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Sage",
+        "hex": "#A3B18A",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-SAGE-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-SAGE-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-SAGE-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-SAGE-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-SAGE-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Olive",
+        "hex": "#6B705C",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-OLIVE-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-OLIVE-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-OLIVE-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-OLIVE-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-OLIVE-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Terracotta",
+        "hex": "#B4613A",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-TERRACOTTA-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-TERRACOTTA-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-TERRACOTTA-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-TERRACOTTA-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-TERRACOTTA-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Maroon",
+        "hex": "#7D2E36",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-MAROON-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-MAROON-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-MAROON-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-MAROON-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-MAROON-XXL",
+            "stock": 6
+          }
+        ]
+      },
+      {
+        "name": "Sand",
+        "hex": "#D2B48C",
+        "gallery": [],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "BLACK-SOLID-T-SHIRT-SAND-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "BLACK-SOLID-T-SHIRT-SAND-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "BLACK-SOLID-T-SHIRT-SAND-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "BLACK-SOLID-T-SHIRT-SAND-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "BLACK-SOLID-T-SHIRT-SAND-XXL",
+            "stock": 6
           }
         ]
       }
@@ -41,32 +420,37 @@
     "sizes": [
       {
         "size": "S",
+        "sku": "BLACK-SOLID-T-SHIRT-BEYOND-ONE-S",
         "stock": 12
       },
       {
         "size": "M",
+        "sku": "BLACK-SOLID-T-SHIRT-BEYOND-ONE-M",
         "stock": 18
       },
       {
         "size": "L",
+        "sku": "BLACK-SOLID-T-SHIRT-BEYOND-ONE-L",
         "stock": 22
       },
       {
         "size": "XL",
+        "sku": "BLACK-SOLID-T-SHIRT-BEYOND-ONE-XL",
         "stock": 9
       },
       {
         "size": "XXL",
+        "sku": "BLACK-SOLID-T-SHIRT-BEYOND-ONE-XXL",
         "stock": 6
       }
     ],
-    "story": "A disciplined black tee — clean lines, intentional weight, presence without distraction.",
+    "story": "Beyond One is where it all begins. A single shirt, cut clean and made properly — the answer to every wardrobe that has too much and still feels like nothing fits.",
     "signatureDetails": [],
     "fabric": {
-      "gsm": "",
-      "material": "",
-      "origin": "",
-      "finish": ""
+      "gsm": "240 GSM",
+      "material": "Premium 100% Combed Cotton",
+      "origin": "Ethically sourced, garment-dyed",
+      "finish": "Brushed, pre-shrunk, soft-touch"
     },
     "care": [],
     "shipping": {
@@ -75,24 +459,24 @@
       "freeShipping": true
     },
     "seo": {
-      "title": "Black Solid T-Shirt — Beyond Buttons",
-      "description": "Black Solid T-Shirt by Beyond Buttons. A refined solid tee for everyday presence.",
+      "title": "Beyond One — Beyond Buttons",
+      "description": "Beyond One by Beyond Buttons. The signature solid shirt — premium fabric, quiet confidence.",
       "image": "/images/images%20(3).jfif"
     }
   },
   {
     "id": "white-solid-t-shirt",
     "slug": "white-solid-t-shirt",
-    "name": "White Solid T-Shirt",
-    "shortName": "White Solid T-Shirt",
-    "category": "Solid T-Shirts",
+    "name": "White Solid Shirt",
+    "shortName": "White Solid Shirt",
+    "category": "Solid Shirts",
     "price": 1299,
     "comparePrice": 1799,
-    "brandStatement": "A precise white tee — bright without harshness, structured for quiet confidence.",
+    "brandStatement": "A precise white shirt — bright without harshness, structured for quiet confidence.",
     "gallery": [
       {
         "src": "/images/images%20(4).jfif",
-        "alt": "White Solid T-Shirt front view",
+        "alt": "White Solid Shirt front view",
         "type": "image"
       },
       {
@@ -113,8 +497,35 @@
         "gallery": [
           {
             "src": "/images/images%20(4).jfif",
-            "alt": "White Solid T-Shirt front view",
+            "alt": "White Solid Shirt front view",
             "type": "image"
+          }
+        ],
+        "sizes": [
+          {
+            "size": "S",
+            "sku": "WHITE-SOLID-T-SHIRT-WHITE-S",
+            "stock": 12
+          },
+          {
+            "size": "M",
+            "sku": "WHITE-SOLID-T-SHIRT-WHITE-M",
+            "stock": 18
+          },
+          {
+            "size": "L",
+            "sku": "WHITE-SOLID-T-SHIRT-WHITE-L",
+            "stock": 22
+          },
+          {
+            "size": "XL",
+            "sku": "WHITE-SOLID-T-SHIRT-WHITE-XL",
+            "stock": 9
+          },
+          {
+            "size": "XXL",
+            "sku": "WHITE-SOLID-T-SHIRT-WHITE-XXL",
+            "stock": 6
           }
         ]
       }
@@ -122,32 +533,37 @@
     "sizes": [
       {
         "size": "S",
-        "stock": 10
+        "sku": "WHITE-SOLID-T-SHIRT-WHITE-S",
+        "stock": 12
       },
       {
         "size": "M",
-        "stock": 16
+        "sku": "WHITE-SOLID-T-SHIRT-WHITE-M",
+        "stock": 18
       },
       {
         "size": "L",
-        "stock": 20
+        "sku": "WHITE-SOLID-T-SHIRT-WHITE-L",
+        "stock": 22
       },
       {
         "size": "XL",
-        "stock": 8
+        "sku": "WHITE-SOLID-T-SHIRT-WHITE-XL",
+        "stock": 9
       },
       {
         "size": "XXL",
-        "stock": 5
+        "sku": "WHITE-SOLID-T-SHIRT-WHITE-XXL",
+        "stock": 6
       }
     ],
-    "story": "A precise white tee — bright without harshness, structured for quiet confidence.",
+    "story": "A precise white shirt — bright without harshness, structured for quiet confidence.",
     "signatureDetails": [],
     "fabric": {
-      "gsm": "",
-      "material": "",
-      "origin": "",
-      "finish": ""
+      "gsm": "240 GSM",
+      "material": "Premium 100% Combed Cotton",
+      "origin": "Ethically sourced, garment-dyed",
+      "finish": "Brushed, pre-shrunk, soft-touch"
     },
     "care": [],
     "shipping": {
@@ -156,8 +572,8 @@
       "freeShipping": true
     },
     "seo": {
-      "title": "White Solid T-Shirt — Beyond Buttons",
-      "description": "White Solid T-Shirt by Beyond Buttons. A refined solid tee for everyday presence.",
+      "title": "White Solid Shirt — Beyond Buttons",
+      "description": "White Solid Shirt by Beyond Buttons. A refined solid shirt for everyday presence.",
       "image": "/images/images%20(4).jfif"
     }
   }

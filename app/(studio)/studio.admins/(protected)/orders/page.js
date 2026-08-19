@@ -46,6 +46,21 @@ function formatDate(value) {
   });
 }
 
+const PAYMENT_METHOD_LABELS = {
+  cod: "COD",
+  card: "Card",
+  upi: "UPI",
+  netbanking: "Net Banking",
+  wallet: "Wallet",
+  online: "Online",
+  emandate: "eMandate",
+  bank_transfer: "Bank Transfer",
+};
+
+function formatPaymentMethod(method) {
+  return PAYMENT_METHOD_LABELS[method] || "Online";
+}
+
 export default function StudioOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
@@ -239,6 +254,9 @@ export default function StudioOrdersPage() {
                   <span>{formatMoney(order.total)}</span>
                   <span className="studio-table__status" data-status={order.paymentStatus}>
                     {order.paymentStatus}
+                    {order.paymentMethod && order.paymentMethod !== "cod" ? (
+                      <small style={{ display: "block", opacity: 0.65 }}>{formatPaymentMethod(order.paymentMethod)}</small>
+                    ) : null}
                   </span>
                   <span className="studio-table__status" data-status={order.shippingStatus}>
                     {order.shippingStatus}

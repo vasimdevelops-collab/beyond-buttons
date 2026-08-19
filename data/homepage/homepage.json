@@ -18,8 +18,8 @@
   "hero": {
     "label": "Beyond Buttons",
     "headlineLines": [
-      "We don't sell shirts.",
-      "We define presence."
+      "We define presence.",
+      "The perfect solid shirt."
     ],
     "subtitleLines": [
       "Crafted with premium fabrics,",
@@ -89,14 +89,14 @@
     {
       "id": "solid-t-shirts",
       "slug": "solid-t-shirts",
-      "title": "Solid T-Shirts",
-      "description": "The Beyond Buttons signature edit — elevated solid tees cut for presence.",
+      "title": "Solid Shirts",
+      "description": "The Beyond Buttons signature edit — elevated solid shirts cut for presence.",
       "ctaLabel": "Explore Collection",
       "href": "/category/solid-t-shirts",
       "media": {
         "type": null,
         "src": null,
-        "alt": "Solid T-Shirts — Beyond Buttons"
+        "alt": "Solid Shirts — Beyond Buttons"
       }
     }
   ],
@@ -106,7 +106,7 @@
   ],
   "footer": {
     "brandName": "Beyond Buttons",
-    "tagline": "We don't sell shirts. We define presence.",
+    "tagline": "We define presence.",
     "copyright": "Beyond Buttons. All rights reserved.",
     "columns": [
       {
@@ -114,15 +114,15 @@
         "title": "Shop",
         "links": [
           {
-            "label": "Solid T-Shirts",
+            "label": "Solid Shirts",
             "href": "/category/solid-t-shirts"
           },
           {
-            "label": "Black Solid T-Shirt",
+            "label": "Beyond One",
             "href": "/product/black-solid-t-shirt"
           },
           {
-            "label": "White Solid T-Shirt",
+            "label": "White Solid Shirt",
             "href": "/product/white-solid-t-shirt"
           }
         ]
@@ -132,12 +132,16 @@
         "title": "Company",
         "links": [
           {
-            "label": "About",
-            "href": "#about"
+            "label": "Our Story",
+            "href": "/about"
           },
           {
             "label": "Contact",
-            "href": "#contact"
+            "href": "/contact"
+          },
+          {
+            "label": "Shipping & Returns",
+            "href": "/shipping"
           }
         ]
       },
@@ -146,12 +150,12 @@
         "title": "Support",
         "links": [
           {
-            "label": "Shipping",
-            "href": "#shipping"
+            "label": "Shipping & Returns",
+            "href": "/shipping"
           },
           {
-            "label": "Returns",
-            "href": "#returns"
+            "label": "Contact Us",
+            "href": "/contact"
           }
         ]
       }

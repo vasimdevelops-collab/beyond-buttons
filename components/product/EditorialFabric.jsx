@@ -44,12 +44,8 @@ export default function EditorialFabric({ fabric }) {
             key={metric.key}
             data-editorial-reveal
           >
-            <span className="editorial-fabric__index" aria-hidden="true">
-              {String(index + 1).padStart(2, "0")}
-            </span>
             <dt>{metric.label}</dt>
             <dd>{String(metric.value)}</dd>
-            <span className="editorial-fabric__line" aria-hidden="true" />
           </div>
         ))}
       </dl>

@@ -362,7 +362,7 @@ export default function ProductsPage() {
                     onChange={handleChange}
                     error={errors.name}
                     required
-                    placeholder="Premium Cotton T-Shirt"
+                    placeholder="Premium Cotton Shirt"
                   />
                   <Input
                     label="Slug"
