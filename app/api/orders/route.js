@@ -331,7 +331,7 @@ export async function POST(request) {
 
     const orderDoc = {
       id: `order_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
-      orderNumber: `BB-${Date.now().toString().slice(-8)}`,
+      orderNumber: `BB-${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
       customerId: authSession.user.id,
       items: snapshots,
       shippingAddress,
@@ -363,12 +363,14 @@ export async function POST(request) {
     try {
       await mongoSession.withTransaction(async () => {
         // Decrement inventory for each item.
+        // Atomic check: only decrement if stock >= requested quantity (prevents oversell race condition).
         for (const decrement of stockDecrements) {
-          await ProductModel.findOneAndUpdate(
+          const result = await ProductModel.findOneAndUpdate(
             {
               id: decrement.productId,
               "variants.colors.id": decrement.colorId,
               "variants.colors.sizes.size": decrement.size,
+              "variants.$[v].colors.$[c].sizes.$[s].stock": { $gte: decrement.qty },
             },
             {
               $inc: {
@@ -383,6 +385,16 @@ export async function POST(request) {
               session: mongoSession,
             }
           );
+
+          if (!result) {
+            // Stock was insufficient between check and decrement - find which item failed
+            const product = await ProductModel.findOne({ id: decrement.productId }, { "variants.colors.sizes": 1 }).session(mongoSession).exec();
+            const variant = product?.variants?.[0];
+            const color = variant?.colors?.find((c) => c.id === decrement.colorId);
+            const sizeEntry = color?.sizes?.find((s) => s.size === decrement.size);
+            const available = sizeEntry?.stock ?? 0;
+            throw new Error(`Insufficient stock for ${decrement.size} (available: ${available}, requested: ${decrement.qty})`);
+          }
         }
 
         // Increment coupon usage count.

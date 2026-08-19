@@ -15,8 +15,8 @@ async function updateOrderPaymentStatus(orderId, paymentId, status, signature, p
     throw new Error(`Order not found: ${orderId}`);
   }
 
-  const existingSignature = order.paymentSignature;
-  if (existingSignature && existingSignature === signature) {
+  // Idempotency: dedupe on paymentId (unique per payment), not webhook signature
+  if (order.paymentId && order.paymentId === paymentId) {
     return { order, alreadyProcessed: true };
   }
 

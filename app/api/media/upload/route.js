@@ -25,6 +25,30 @@ import { getCloudinary, cloudinaryFolderFor } from "@/lib/media/cloudinary";
 
 const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8 MB
 
+// File signature (magic bytes) validation
+const FILE_SIGNATURES = {
+  // Image formats
+  "image/jpeg": [[0xFF, 0xD8, 0xFF]],
+  "image/png": [[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]],
+  "image/gif": [[0x47, 0x49, 0x46, 0x38, 0x37, 0x61], [0x47, 0x49, 0x46, 0x38, 0x39, 0x61]],
+  "image/webp": [[0x52, 0x49, 0x46, 0x46, null, null, null, null, 0x57, 0x45, 0x42, 0x50]],
+  // Video formats
+  "video/mp4": [[0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70], [0x00, 0x00, 0x00, 0x1C, 0x66, 0x74, 0x79, 0x70]],
+  "video/webm": [[0x1A, 0x45, 0xDF, 0xA3]],
+  "video/quicktime": [[0x00, 0x00, 0x00, 0x14, 0x66, 0x74, 0x79, 0x70, 0x71, 0x74]],
+};
+
+function validateFileSignature(buffer, declaredMimeType) {
+  const signatures = FILE_SIGNATURES[declaredMimeType];
+  if (!signatures) {
+    // Unknown mime type - reject for safety
+    return false;
+  }
+  return signatures.some((sig) =>
+    sig.every((byte, i) => byte === null || buffer[i] === byte)
+  );
+}
+
 const FOLDER_LABELS = {
   brand: "Brand",
   homepage: "Homepage",
@@ -65,6 +89,15 @@ export async function POST(request) {
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
+    // Validate file signature (magic bytes) against declared MIME type
+    if (!validateFileSignature(buffer, mimeType)) {
+      return NextResponse.json(
+        { error: "File content does not match declared type. Possible malicious upload." },
+        { status: 415 }
+      );
+    }
+
     const base64 = buffer.toString("base64");
     const dataUri = `data:${mimeType};base64,${base64}`;
 

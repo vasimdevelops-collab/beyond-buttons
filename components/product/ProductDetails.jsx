@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import gsap from "gsap";
 
-import { useShop } from "@/lib/shop/ShopContext";
 import { useCart } from "@/lib/shop/commerce";
 import "./product.css";
 
@@ -74,8 +73,7 @@ function colorAwareTitle(productName, selectedColorName, allColorNames) {
 
 export default function ProductDetails({ product }) {
   const router = useRouter();
-  const { toggleWishlist, isInWishlist } = useShop();
-  const { addItem } = useCart();
+  const { toggleWishlist, isInWishlist, addItem } = useCart();
   const rootRef = useRef(null);
   const imageRef = useRef(null);
   const lensRef = useRef(null);

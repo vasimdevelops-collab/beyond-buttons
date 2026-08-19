@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/session";
 import { bootstrapDatabase } from "@/lib/database/register";
 import { OrderModel } from "@/lib/database/models";
+import { checkCsrf } from "@/lib/admin/csrf";
 
 const VALID_PAYMENT_STATUSES = new Set(["pending", "paid", "failed", "refunded"]);
 const VALID_SHIPPING_STATUSES = new Set([
@@ -45,6 +46,10 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   const guard = requireAdmin(request);
   if (guard.error) return NextResponse.json(guard.error, { status: guard.status });
+
+  // CSRF protection for state-changing requests
+  const csrfError = await checkCsrf(request);
+  if (csrfError) return csrfError;
 
   try {
     const adminEmail = guard.email;

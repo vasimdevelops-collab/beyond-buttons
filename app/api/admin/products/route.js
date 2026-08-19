@@ -179,11 +179,27 @@ export async function GET(request) {
       return NextResponse.json(normalizeProductDoc(doc));
     }
 
-    const docs = await ProductModel.find({}).sort({ updatedAt: -1 }).lean().exec();
-    return NextResponse.json(docs.map(normalizeProductDoc).filter(Boolean));
+    // Pagination with limits to prevent unbounded result sets
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
+
+    const [docs, total] = await Promise.all([
+      ProductModel.find({})
+        .sort({ updatedAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean()
+        .exec(),
+      ProductModel.countDocuments({}),
+    ]);
+
+    return NextResponse.json({
+      products: docs.map(normalizeProductDoc).filter(Boolean),
+      pagination: { page, limit, total, pages: Math.ceil(total / limit) },
+    });
   } catch (error) {
     console.error("[admin/products] GET failed:", error);
-    return NextResponse.json([], { status: 200 });
+    return NextResponse.json({ products: [], pagination: { page: 1, limit: 50, total: 0, pages: 0 } }, { status: 200 });
   }
 }
 

@@ -5,7 +5,6 @@ import { Montserrat, Cormorant_Garamond } from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { ThemeInit } from "@/components/theme/ThemeInit";
-import { ShopProvider } from "@/lib/shop/ShopContext";
 import { CartProvider } from "@/lib/shop/commerce";
 import ToastViewport from "@/components/toast/ToastViewport";
 
@@ -33,10 +32,8 @@ export default function RootLayout({ children }) {
       >
         <ThemeInit />
         <CartProvider>
-          <ShopProvider>
-            <ThemeProvider>{children}</ThemeProvider>
-            <ToastViewport />
-          </ShopProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+          <ToastViewport />
         </CartProvider>
       </body>
     </html>

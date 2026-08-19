@@ -4,11 +4,11 @@ import Link from "next/link";
 import { X } from "lucide-react";
 
 import Navbar from "@/components/layout/Navbar";
-import { useShop } from "@/lib/shop/ShopContext";
+import { useCart } from "@/lib/shop/commerce";
 import "@/components/about/about.css";
 
 export default function WishlistPage() {
-  const { wishlist, toggleWishlist } = useShop();
+  const { wishlist, toggleWishlist } = useCart();
 
   const handleRemove = (item) => {
     toggleWishlist(item);

@@ -14,7 +14,6 @@ import {
 
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
-import { useShop } from "@/lib/shop/ShopContext";
 import { useCart } from "@/lib/shop/commerce";
 
 import MegaMenu from "./MegaMenu";
@@ -80,8 +79,7 @@ function readThemeTokens() {
 
 export default function Navbar() {
   const { theme } = useTheme();
-  const { itemCount } = useCart();
-  const { wishlistCount } = useShop();
+  const { itemCount, wishlistCount } = useCart();
   const headerRef = useRef(null);
   const surfaceRef = useRef(null);
   const innerRef = useRef(null);

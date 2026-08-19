@@ -7,8 +7,38 @@ function nowMs() {
   return Date.now();
 }
 
+// Simple in-memory rate limiter: 10 requests per minute per IP
+const RATE_LIMIT_WINDOW_MS = 60000;
+const RATE_LIMIT_MAX_REQUESTS = 10;
+const rateLimitMap = new Map();
+
+function checkRateLimit(ip) {
+  const now = nowMs();
+  const record = rateLimitMap.get(ip);
+  if (!record || now - record.windowStart > RATE_LIMIT_WINDOW_MS) {
+    rateLimitMap.set(ip, { count: 1, windowStart: now });
+    return true;
+  }
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return false;
+  }
+  record.count++;
+  return true;
+}
+
 export async function POST(request) {
   try {
+    // Rate limiting: 10 requests per minute per IP
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+               request.headers.get("x-real-ip") ||
+               "unknown";
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { valid: false, discount: 0, message: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const code = String(body?.code || "").trim();
 

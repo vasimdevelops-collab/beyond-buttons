@@ -18,9 +18,10 @@ export async function POST(request) {
     }
 
     const signature = request.headers.get("x-shiprocket-signature") || "";
-    const payload = await request.json();
+    const rawBody = await request.text();
+    const payload = JSON.parse(rawBody);
 
-    if (!shiprocket.verifyWebhookSignature(payload, signature)) {
+    if (!shiprocket.verifyWebhookSignature(rawBody, signature)) {
       console.error("[shiprocket/webhook] Invalid signature");
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
