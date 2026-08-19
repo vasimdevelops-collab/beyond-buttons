@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { OrderStatusUpdater } from "@/app/(studio)/studio.admins/(protected)/orders/[orderId]/status-updater";
+import { ShiprocketActions } from "@/app/(studio)/studio.admins/(protected)/orders/[orderId]/shiprocket-actions";
 
 function formatMoney(value) {
   return new Intl.NumberFormat("en-IN", {
@@ -172,14 +173,84 @@ export default async function StudioOrderDetailPage({ params }) {
             </div>
             <div className="studio-field">
               <span className="studio-field__label">Courier</span>
-              <p style={{ margin: 0 }}>{order.courier || "—"}</p>
+              <p style={{ margin: 0 }}>{order.courierName || order.courier || "—"}</p>
             </div>
             <div className="studio-field">
               <span className="studio-field__label">Tracking</span>
-              <p style={{ margin: 0 }}>{order.tracking || "—"}</p>
+              <p style={{ margin: 0 }}>{order.awbCode || order.tracking || "—"}</p>
             </div>
           </div>
         </section>
+
+        {/* Shiprocket details */}
+        {order.shiprocketOrderId && (
+          <section className="studio-section" aria-label="Shiprocket details">
+            <header className="studio-section__header">
+              <h2 className="studio-section__title">Shiprocket</h2>
+              <p className="studio-section__copy">Shiprocket shipment details and actions.</p>
+            </header>
+            <div className="studio-section__fields">
+              <div className="studio-field">
+                <span className="studio-field__label">Shiprocket Order ID</span>
+                <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.875rem" }}>
+                  {order.shiprocketOrderId}
+                </p>
+              </div>
+              <div className="studio-field">
+                <span className="studio-field__label">Shipment ID</span>
+                <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.875rem" }}>
+                  {order.shiprocketShipmentId || "—"}
+                </p>
+              </div>
+              <div className="studio-field">
+                <span className="studio-field__label">AWB Code</span>
+                <p style={{ margin: 0, fontFamily: "monospace", fontSize: "0.875rem" }}>
+                  {order.awbCode || "—"}
+                </p>
+              </div>
+              <div className="studio-field">
+                <span className="studio-field__label">Courier</span>
+                <p style={{ margin: 0 }}>{order.courierName || "—"}</p>
+              </div>
+              <div className="studio-field">
+                <span className="studio-field__label">Shiprocket Status</span>
+                <span className="studio-table__status" data-status={order.shiprocketStatus}>
+                  {order.shiprocketStatus || "—"}
+                </span>
+              </div>
+              <div className="studio-field">
+                <span className="studio-field__label">Label</span>
+                {order.labelUrl ? (
+                  <a href={order.labelUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--gold)", textDecoration: "underline" }}>
+                    View Label
+                  </a>
+                ) : (
+                  <p style={{ margin: 0, opacity: 0.5 }}>Not generated</p>
+                )}
+              </div>
+              <div className="studio-field">
+                <span className="studio-field__label">Manifest</span>
+                {order.manifestUrl ? (
+                  <a href={order.manifestUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--gold)", textDecoration: "underline" }}>
+                    View Manifest
+                  </a>
+                ) : (
+                  <p style={{ margin: 0, opacity: 0.5 }}>Not generated</p>
+                )}
+              </div>
+              <div className="studio-field">
+                <span className="studio-field__label">Pickup Scheduled</span>
+                <p style={{ margin: 0 }}>
+                  {order.pickupScheduledAt ? new Date(order.pickupScheduledAt).toLocaleString("en-IN") : "—"}
+                  {order.pickupToken ? ` · Token: ${order.pickupToken}` : ""}
+                </p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Shiprocket Actions */}
+        <ShiprocketActions order={order} />
 
         {/* Items */}
         <section className="studio-section" aria-label="Items">
