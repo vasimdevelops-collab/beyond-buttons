@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
 function formatAxisMoney(value) {
   if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
   if (value >= 1000) return `₹${(value / 1000).toFixed(1)}k`;
@@ -5,6 +9,19 @@ function formatAxisMoney(value) {
 }
 
 export default function SalesChart({ series }) {
+  const containerRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => setContainerWidth(el.clientWidth || 0);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const width = 900;
   const height = 240;
   const padL = 46;
@@ -15,7 +32,6 @@ export default function SalesChart({ series }) {
   const innerH = height - padT - padB;
 
   const maxRevenue = Math.max(1, ...series.map((d) => d.revenue));
-  const maxOrders = Math.max(1, ...series.map((d) => d.orders));
   const scaleY = (value) => padT + innerH - (value / maxRevenue) * innerH;
 
   const stepX = series.length > 1 ? innerW / (series.length - 1) : innerW;
@@ -34,15 +50,20 @@ export default function SalesChart({ series }) {
     : "";
 
   const gridLines = [0, 0.25, 0.5, 0.75, 1];
-  const labelEvery = Math.max(1, Math.ceil(series.length / 12));
+
+  // Label density follows the actual rendered width (desktop → ~12 labels,
+  // narrow mobile → only a handful so they never collide).
+  const measured = containerWidth || 700;
+  const targetLabels = Math.max(4, Math.floor(measured / 62));
+  const labelEvery = Math.max(1, Math.ceil(series.length / targetLabels));
 
   return (
-    <div style={{ width: "100%", overflowX: "auto" }}>
+    <div ref={containerRef} style={{ width: "100%", minWidth: 0 }}>
       <svg
         viewBox={`0 0 ${width} ${height}`}
         role="img"
         aria-label="Daily sales and revenue for the last 30 days"
-        style={{ width: "100%", minWidth: 560, height: "auto", display: "block" }}
+        style={{ width: "100%", height: "auto", display: "block" }}
       >
         <defs>
           <linearGradient id="salesArea" x1="0" y1="0" x2="0" y2="1">

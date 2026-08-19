@@ -316,25 +316,25 @@ export default function OverviewDashboard({ initialData }) {
               <tbody>
                 {data.recentOrders.map((order) => (
                   <tr key={order.id}>
-                    <td>
+                    <td data-label="Order">
                       <Link href={`/studio.admins/orders/${encodeURIComponent(order.id)}`} className="ov-order">
                         <strong>{order.orderNumber || order.id}</strong>
                       </Link>
                     </td>
-                    <td>{order.customer}</td>
-                    <td>
+                    <td data-label="Customer">{order.customer}</td>
+                    <td data-label="Payment">
                       <span className={`ov-pill ov-pill--${order.paymentStatus}`}>
                         {order.paymentStatus}
                       </span>
                       <span className="ov-order-sub">{PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}</span>
                     </td>
-                    <td>
+                    <td data-label="Shipment">
                       <span className={`ov-pill ov-pill--${order.shippingStatus}`}>
                         {SHIPPING_LABELS[order.shippingStatus] || order.shippingStatus}
                       </span>
                     </td>
-                    <td className="ov-order-sub">{formatOrderTime(order.createdAt)}</td>
-                    <td><strong>{formatMoney(order.total, order.currency)}</strong></td>
+                    <td data-label="Date"><span className="ov-order-sub">{formatOrderTime(order.createdAt)}</span></td>
+                    <td data-label="Total"><strong>{formatMoney(order.total, order.currency)}</strong></td>
                   </tr>
                 ))}
               </tbody>

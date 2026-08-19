@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { Menu, X } from "lucide-react";
 
 const STUDIO_PATHS = Object.freeze({
   root: "/studio.admins",
@@ -108,6 +110,13 @@ export function StudioShell({ children, user }) {
   const pathname = usePathname();
   const router = useRouter();
   const active = resolveActiveNav(pathname);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Close the mobile drawer on navigation.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMenuOpen(false);
+  }, [pathname]);
 
   async function handleSignOut() {
     try {
@@ -121,7 +130,54 @@ export function StudioShell({ children, user }) {
 
   return (
     <div className="studio-root studio-shell">
-      <aside className="studio-sidebar" aria-label="Studio navigation">
+      {/* Mobile top bar — hamburger toggle + brand */}
+      <header className="studio-mobilebar">
+        <button
+          type="button"
+          className="studio-mobilebar__toggle"
+          aria-label={menuOpen ? "Close studio menu" : "Open studio menu"}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((value) => !value)}
+        >
+          {menuOpen ? (
+            <X size={20} strokeWidth={1.75} aria-hidden="true" />
+          ) : (
+            <Menu size={20} strokeWidth={1.75} aria-hidden="true" />
+          )}
+        </button>
+        <Link className="studio-mobilebar__brand" href={STUDIO_PATHS.root} aria-label="Beyond Buttons Studio">
+          <Image
+            src="/images/logo.png"
+            alt="Beyond Buttons"
+            width={577}
+            height={433}
+            sizes="30px"
+            priority
+          />
+          <span>Studio</span>
+        </Link>
+        <span className="studio-mobilebar__spacer" aria-hidden="true" />
+        <button
+          type="button"
+          className="studio-mobilebar__signout"
+          onClick={handleSignOut}
+          aria-label="Sign out"
+        >
+          Sign Out
+        </button>
+      </header>
+
+      {/* Mobile drawer backdrop */}
+      {menuOpen ? (
+        <button
+          type="button"
+          className="studio-backdrop"
+          aria-label="Close menu"
+          onClick={() => setMenuOpen(false)}
+        />
+      ) : null}
+
+      <aside className={`studio-sidebar${menuOpen ? " is-open" : ""}`} aria-label="Studio navigation">
         <StudioBrand />
         <nav className="studio-nav" aria-label="Studio modules">
           {STUDIO_NAV.map((item) => {
