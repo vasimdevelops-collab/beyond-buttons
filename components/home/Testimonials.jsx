@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 if (typeof window !== "undefined") {
-  gsap.registerPlugin();
+  gsap.registerPlugin(ScrollTrigger);
 }
 
 const TESTIMONIALS = [
@@ -124,10 +125,17 @@ export default function Testimonials() {
     const section = trackRef.current;
     if (!section) return;
 
+    // Set initial state for animation (will be overridden by GSAP)
+    const cards = section.querySelectorAll(".testimonial-card");
+    cards.forEach((card) => {
+      card.style.opacity = "0";
+      card.style.transform = "translateY(40px)";
+    });
+
     const ctx = gsap.context(() => {
-      gsap.from(".testimonial-card", {
-        y: 40,
-        opacity: 0,
+      gsap.to(".testimonial-card", {
+        y: 0,
+        opacity: 1,
         duration: 0.8,
         stagger: 0.15,
         ease: "power3.out",
@@ -135,11 +143,25 @@ export default function Testimonials() {
           trigger: section,
           start: "top 85%",
           toggleActions: "play none none reverse",
+          // Fallback: if already in viewport, play immediately
+          onEnter: () => {},
+          onLeaveBack: () => {},
         },
       });
     }, trackRef);
 
-    return () => ctx.revert();
+    // Fallback: ensure cards become visible even if scrollTrigger doesn't fire
+    const fallbackTimer = setTimeout(() => {
+      cards.forEach((card) => {
+        card.style.opacity = "1";
+        card.style.transform = "translateY(0)";
+      });
+    }, 2000);
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      ctx.revert();
+    };
   }, []);
 
   return (
