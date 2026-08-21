@@ -74,7 +74,6 @@ function getInitials(name) {
 }
 
 function getAvatarColor(name) {
-  // Generate a consistent color based on name for variety
   const colors = [
     "linear-gradient(135deg, var(--gold), var(--goldLight))",
     "linear-gradient(135deg, var(--goldLight), #f5e6a0)",
@@ -92,20 +91,43 @@ function getAvatarColor(name) {
 
 export default function Testimonials() {
   const trackRef = useRef(null);
-  const [isHovered, setIsHovered] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [cardsPerView, setCardsPerView] = useState(4);
+  const [isHovered, setIsHovered] = useState(false);
 
-  const cardsToShow = 3;
+  // Set CSS variable for responsive card width
+  useEffect(() => {
+    if (trackRef.current) {
+      trackRef.current.style.setProperty("--cards-per-view", cardsPerView);
+    }
+  }, [cardsPerView]);
+
   const totalCards = TESTIMONIALS.length;
-  const cardWidth = 100 / cardsToShow;
 
-  // Duplicate cards for infinite loop effect
+  // Calculate cards per view based on viewport
+  useEffect(() => {
+    const updateCardsPerView = () => {
+      const width = window.innerWidth;
+      if (width >= 1400) setCardsPerView(4);
+      else if (width >= 1024) setCardsPerView(3);
+      else if (width >= 768) setCardsPerView(2);
+      else setCardsPerView(1);
+    };
+
+    updateCardsPerView();
+    window.addEventListener("resize", updateCardsPerView);
+    return () => window.removeEventListener("resize", updateCardsPerView);
+  }, []);
+
+  const cardWidth = 100 / cardsPerView;
+
+  // For infinite loop, we need enough duplicates to cover the max cards per view
+  const duplicatesNeeded = Math.max(cardsPerView * 2, 6);
   const duplicated = [...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS];
-  const startOffset = totalCards; // Start from the middle set
+  const startOffset = totalCards;
 
-  // Calculate transform based on currentIndex
   const getTransform = () => {
-    const offset = (startOffset + currentIndex) * cardWidth;
+    const offset = (startOffset + currentIndex) * (100 / cardsPerView);
     return `translateX(-${offset}%)`;
   };
 
@@ -115,42 +137,37 @@ export default function Testimonials() {
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % totalCards);
-    }, 4000);
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [isHovered, totalCards]);
+  }, [isHovered, totalCards, currentIndex]);
 
   // GSAP entrance animation
   useEffect(() => {
     const section = trackRef.current;
     if (!section) return;
 
-    // Set initial state for animation (will be overridden by GSAP)
     const cards = section.querySelectorAll(".testimonial-card");
     cards.forEach((card) => {
       card.style.opacity = "0";
-      card.style.transform = "translateY(40px)";
+      card.style.transform = "translateY(30px)";
     });
 
     const ctx = gsap.context(() => {
       gsap.to(".testimonial-card", {
         y: 0,
         opacity: 1,
-        duration: 0.8,
-        stagger: 0.15,
+        duration: 0.7,
+        stagger: 0.1,
         ease: "power3.out",
         scrollTrigger: {
           trigger: section,
           start: "top 85%",
           toggleActions: "play none none reverse",
-          // Fallback: if already in viewport, play immediately
-          onEnter: () => {},
-          onLeaveBack: () => {},
         },
       });
     }, trackRef);
 
-    // Fallback: ensure cards become visible even if scrollTrigger doesn't fire
     const fallbackTimer = setTimeout(() => {
       cards.forEach((card) => {
         card.style.opacity = "1";
@@ -164,15 +181,20 @@ export default function Testimonials() {
     };
   }, []);
 
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + totalCards) % totalCards);
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % totalCards);
+  };
+
   return (
     <section className="testimonials-section" ref={trackRef} aria-label="Customer testimonials">
       <div className="testimonials__container">
         <header className="testimonials__header">
-          <p className="testimonials__eyebrow">Trusted by thousands</p>
-          <h2 className="testimonials__title">What our community says</h2>
-          <p className="testimonials__subtitle">
-            Real experiences from people who made the switch to fewer, better.
-          </p>
+          <p className="testimonials__eyebrow">What our community says</p>
+          <h2 className="testimonials__title">Real experiences from people who made the switch to fewer, better pieces.</h2>
         </header>
 
         <div
@@ -185,15 +207,15 @@ export default function Testimonials() {
             style={{
               transform: getTransform(),
               display: "flex",
-              width: `${duplicated.length * cardWidth}%`,
-              transition: "transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+              width: `${duplicated.length * (100 / cardsPerView)}%`,
+              transition: "transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
             }}
           >
             {duplicated.map((testimonial, index) => (
               <article
                 key={`${testimonial.id}-${index}`}
                 className="testimonial-card"
-                style={{ width: `${cardWidth}%`, flexShrink: 0 }}
+                style={{ flexShrink: 0 }}
               >
                 <div className="testimonial-card__inner">
                   <div className="testimonial-card__rating" aria-label={`${testimonial.rating} out of 5 stars`}>
@@ -239,26 +261,28 @@ export default function Testimonials() {
             ))}
           </div>
 
-          {/* Navigation arrows */}
-          <button
-            className="testimonials__nav testimonials__nav--prev"
-            aria-label="Previous testimonial"
-            onClick={() => setCurrentIndex((prev) => (prev - 1 + totalCards) % totalCards)}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
+          {/* Navigation arrows - positioned at bottom right */}
+          <div className="testimonials__nav-group">
+            <button
+              className="testimonials__nav testimonials__nav--prev"
+              aria-label="Previous testimonial"
+              onClick={() => setCurrentIndex((prev) => (prev - 1 + totalCards) % totalCards)}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
 
-          <button
-            className="testimonials__nav testimonials__nav--next"
-            aria-label="Next testimonial"
-            onClick={() => setCurrentIndex((prev) => (prev + 1) % totalCards)}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </button>
+            <button
+              className="testimonials__nav testimonials__nav--next"
+              aria-label="Next testimonial"
+              onClick={() => setCurrentIndex((prev) => (prev + 1) % totalCards)}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
 
           {/* Dots indicator */}
           <div className="testimonials__dots" aria-label="Testimonial navigation">
