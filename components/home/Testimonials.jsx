@@ -13,7 +13,6 @@ const TESTIMONIALS = [
     name: "Priya Sharma",
     location: "Mumbai",
     role: "Creative Director",
-    avatar: "/images/avatars/priya.jpg",
     text: "Beyond Buttons has completely changed how I think about everyday dressing. The Cloud White shirt is the first piece in years that fits perfectly off the rack — no tailoring needed. The fabric weight, the collar roll, the way it drapes... it's evident that every decision was intentional.",
     rating: 5,
     verified: true,
@@ -23,7 +22,6 @@ const TESTIMONIALS = [
     name: "Rohit Malhotra",
     location: "Delhi",
     role: "Founder, Tech Startup",
-    avatar: "/images/avatars/rohit.jpg",
     text: "I've bought three shirts now — Navy, Olive, and Charcoal. They've become my uniform for investor meetings and long travel days. The fabric doesn't wrinkle, the collar holds its shape, and I genuinely feel more put-together without trying. This is what 'quiet luxury' should mean.",
     rating: 5,
     verified: true,
@@ -33,7 +31,6 @@ const TESTIMONIALS = [
     name: "Ananya Iyer",
     location: "Bangalore",
     role: "Architect",
-    avatar: "/images/avatars/ananya.jpg",
     text: "Finally, a brand that understands proportions for Indian bodies. The sleeve length, the shoulder width, the torso length — it's like they were made for me. The Maroon Boxy shirt gets compliments every time I wear it. Quality you can feel in the stitching and the hand-feel of the cotton.",
     rating: 5,
     verified: true,
@@ -43,7 +40,6 @@ const TESTIMONIALS = [
     name: "Karan Mehta",
     location: "Pune",
     role: "Photographer",
-    avatar: "/images/avatars/karan.jpg",
     text: "The Cream Relaxed Cargo pants paired with the Boxy shirt — best fit combo I own. Wore them for a 12-hour shoot day and zero discomfort. The fabric breathes, the pockets are actually usable, and they look better after washing. Beyond Buttons gets the 'lived-in' aesthetic right.",
     rating: 5,
     verified: true,
@@ -53,7 +49,6 @@ const TESTIMONIALS = [
     name: "Sneha Reddy",
     location: "Hyderabad",
     role: "Product Designer",
-    avatar: "/images/avatars/sneha.jpg",
     text: "Ordered online, hesitated on sizing — their guide was spot on. The package arrived in beautiful minimal packaging, handwritten note included. That level of care in the unboxing experience tells you everything about the brand. The shirt itself? Impeccable. Will be a repeat customer.",
     rating: 5,
     verified: true,
@@ -63,12 +58,36 @@ const TESTIMONIALS = [
     name: "Arjun Patel",
     location: "Ahmedabad",
     role: "Business Owner",
-    avatar: "/images/avatars/arjun.jpg",
     text: "Been wearing the Solid White for client meetings all month. Zero see-through issues, collar stays crisp through humid days, and the hidden placket gives that clean architectural line I prefer. It's rare to find basics this well-engineered at this price point.",
     rating: 5,
     verified: true,
   },
 ];
+
+function getInitials(name) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function getAvatarColor(name) {
+  // Generate a consistent color based on name for variety
+  const colors = [
+    "linear-gradient(135deg, var(--gold), var(--goldLight))",
+    "linear-gradient(135deg, var(--goldLight), #f5e6a0)",
+    "linear-gradient(135deg, #c9a96e, var(--gold))",
+    "linear-gradient(135deg, #b8965c, #c9a96e)",
+    "linear-gradient(135deg, #a6834a, #b8965c)",
+    "linear-gradient(135deg, #94703a, #a6834a)",
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
 
 export default function Testimonials() {
   const trackRef = useRef(null);
@@ -164,18 +183,13 @@ export default function Testimonials() {
 
                   <footer className="testimonial-card__footer">
                     <div className="testimonial-card__avatar-wrapper">
-                      {testimonial.avatar ? (
-                        <img
-                          src={testimonial.avatar}
-                          alt=""
-                          className="testimonial-card__avatar"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="testimonial-card__avatar-placeholder">
-                          {testimonial.name.charAt(0)}
-                        </div>
-                      )}
+                      <div
+                        className="testimonial-card__avatar"
+                        style={{ background: getAvatarColor(testimonial.name) }}
+                        aria-hidden="true"
+                      >
+                        {getInitials(testimonial.name)}
+                      </div>
                       {testimonial.verified && (
                         <span className="testimonial-card__verified" aria-label="Verified purchase">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
