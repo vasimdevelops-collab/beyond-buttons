@@ -74,23 +74,30 @@ export default function Testimonials() {
   const trackRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const animationRef = useRef(null);
 
   const cardsToShow = 3;
   const totalCards = TESTIMONIALS.length;
   const cardWidth = 100 / cardsToShow;
 
+  // Duplicate cards for infinite loop effect
+  const duplicated = [...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS];
+  const startOffset = totalCards; // Start from the middle set
+
+  // Calculate transform based on currentIndex
+  const getTransform = () => {
+    const offset = (startOffset + currentIndex) * cardWidth;
+    return `translateX(-${offset}%)`;
+  };
+
   // Auto-slide logic
   useEffect(() => {
     if (isHovered) return;
 
-    animationRef.current = setInterval(() => {
+    const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % totalCards);
     }, 4000);
 
-    return () => {
-      if (animationRef.current) clearInterval(animationRef.current);
-    };
+    return () => clearInterval(interval);
   }, [isHovered, totalCards]);
 
   // GSAP entrance animation
@@ -113,10 +120,6 @@ export default function Testimonials() {
     return () => ctx.revert();
   }, []);
 
-  // Duplicate cards for infinite loop effect
-  const duplicated = [...TESTIMONIALS, ...TESTIMONIALS, ...TESTIMONIALS];
-  const startOffset = totalCards; // Start from the middle set
-
   return (
     <section className="testimonials-section" ref={trackRef} aria-label="Customer testimonials">
       <div className="testimonials__container">
@@ -136,7 +139,7 @@ export default function Testimonials() {
           <div
             className="testimonials__track"
             style={{
-              transform: `translateX(-${startOffset * cardWidth}%)`,
+              transform: getTransform(),
               display: "flex",
               width: `${duplicated.length * cardWidth}%`,
               transition: "transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
