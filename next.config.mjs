@@ -17,6 +17,13 @@ if (process.env.NEXT_PHASE !== "phase-export" && process.env.SKIP_ENV_VALIDATION
 const nextConfig = {
   images: {
     qualities: [75, 85],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+    ],
   },
 };
 

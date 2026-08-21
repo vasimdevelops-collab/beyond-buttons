@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 
 import { bootstrapDatabase } from "@/lib/database/register";
 import { OrderModel } from "@/lib/database/models";
+import { restoreOrderStockOnce } from "@/lib/shop/stock";
 import { shiprocket, ShiprocketError } from "@/lib/shiprocket";
 
 export async function POST(request) {
@@ -258,6 +259,10 @@ export async function POST(request) {
     }
 
     await order.save();
+
+    if (event.type === "cancelled") {
+      await restoreOrderStockOnce(order.id, "shiprocket_webhook");
+    }
 
     console.info(`[shiprocket/webhook] Updated order ${order.id} (${order.orderNumber}): ${event.type}`);
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { Leaf, Minimize2, Ruler, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Leaf, Minimize2, Ruler, ShieldCheck } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -39,6 +39,7 @@ const FEATURES = [
 ];
 
 const DUST_COLORS = ["#D4AF37", "#F1D37B", "#C9A227", "#B08D57"];
+const FEATURE_CARD_ANIMATIONS_ENABLED = false;
 
 function createMote(width, height, seedTop = false) {
   return {
@@ -154,12 +155,23 @@ function EditorialMedia({ media, mediaRef, frameRef }) {
             <span className="why__media-caption">Editorial Frame</span>
           </div>
         )}
+
+        {media?.caption ? (
+          <span className="why__media-chip" aria-hidden="true">
+            {media.caption}
+          </span>
+        ) : null}
+
+        <div className="why__media-quote" aria-hidden="true">
+          <span className="why__media-quote-mark">“</span>
+          <p>Quality is remembered long after price is forgotten.</p>
+        </div>
       </div>
     </div>
   );
 }
 
-function FeatureCard({ feature }) {
+function FeatureCard({ feature, index }) {
   const cardRef = useRef(null);
   const glowRef = useRef(null);
   const accentRef = useRef(null);
@@ -167,6 +179,7 @@ function FeatureCard({ feature }) {
   const { Icon } = feature;
 
   useEffect(() => {
+    if (!FEATURE_CARD_ANIMATIONS_ENABLED) return undefined;
     const card = cardRef.current;
     if (!card) return undefined;
 
@@ -229,11 +242,19 @@ function FeatureCard({ feature }) {
     <article className="why__card" ref={cardRef} tabIndex={0}>
       <span className="why__card-glow" ref={glowRef} aria-hidden="true" />
       <span className="why__card-accent" ref={accentRef} aria-hidden="true" />
-      <span className="why__card-icon" ref={iconRef}>
-        <Icon size={22} strokeWidth={1.4} aria-hidden="true" />
+      <span className="why__card-top">
+        <span className="why__card-icon" ref={iconRef}>
+          <Icon size={22} strokeWidth={1.4} aria-hidden="true" />
+        </span>
+        <span className="why__card-index" aria-hidden="true">
+          {String(index + 1).padStart(2, "0")}
+        </span>
       </span>
       <h3 className="why__card-title">{feature.title}</h3>
       <p className="why__card-copy">{feature.copy}</p>
+      <span className="why__card-arrow" aria-hidden="true">
+        <ArrowUpRight size={17} strokeWidth={1.4} />
+      </span>
     </article>
   );
 }
@@ -247,6 +268,7 @@ export default function WhyBeyond({ media }) {
   const mediaWrapRef = useRef(null);
   const frameRef = useRef(null);
   const cardsWrapRef = useRef(null);
+  const stackRef = useRef(null);
 
   useAmbientDust(dustRef);
 
@@ -255,7 +277,12 @@ export default function WhyBeyond({ media }) {
     if (!section) return undefined;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const cards = Array.from(section.querySelectorAll(".why__card"));
+    // The feature boxes intentionally stay static on every viewport. This
+    // avoids the mobile scroll-pinning effect and keeps their layout stable.
+    const isMobile = false;
+    const cards = cardsWrapRef.current
+      ? Array.from(cardsWrapRef.current.querySelectorAll(".why__card"))
+      : [];
 
     const ctx = gsap.context(() => {
       if (reducedMotion) {
@@ -263,6 +290,9 @@ export default function WhyBeyond({ media }) {
           [eyebrowRef.current, titleRef.current, subtitleRef.current, mediaWrapRef.current, ...cards],
           { autoAlpha: 1, y: 0, scale: 1 }
         );
+        if (stackRef.current) {
+          stackRef.current.classList.add("why__stack--static");
+        }
         return;
       }
 
@@ -271,7 +301,9 @@ export default function WhyBeyond({ media }) {
         y: 24,
       });
       gsap.set(mediaWrapRef.current, { autoAlpha: 0, y: 40 });
-      gsap.set(cards, { autoAlpha: 0, y: 36 });
+      if (!isMobile) {
+        gsap.set(cards, { autoAlpha: 0, y: 36 });
+      }
 
       const headerTl = gsap.timeline({
         defaults: { ease: "power3.out" },
@@ -284,17 +316,19 @@ export default function WhyBeyond({ media }) {
         .to(subtitleRef.current, { autoAlpha: 1, y: 0, duration: 0.55 }, 0.22)
         .to(mediaWrapRef.current, { autoAlpha: 1, y: 0, duration: 0.85 }, 0.18);
 
-      gsap.to(cards, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.75,
-        stagger: 0.14,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: cardsWrapRef.current,
-          start: "top 82%",
-        },
-      });
+      if (!isMobile) {
+        gsap.to(cards, {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.75,
+          stagger: 0.14,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: cardsWrapRef.current,
+            start: "top 82%",
+          },
+        });
+      }
 
       if (frameRef.current) {
         gsap.to(frameRef.current, {
@@ -320,6 +354,47 @@ export default function WhyBeyond({ media }) {
           repeat: -1,
           yoyo: true,
         });
+      }
+
+      /* Mobile only — Apple-style scroll-driven stacking cards.
+         The tall wrapper (height = (N + 1) * 100vh) plus the sticky 100vh stage
+         (.why uses overflow: clip so sticky still pins against the viewport)
+         give each layer its own 100vh slice of scroll. A single scrubbed
+         timeline over the whole range (top top → bottom bottom) drives the
+         cards: card 0 is visible on pin, then each following card slides up
+         from translateY(100%) to 0 across its slice, stacking on top of the
+         previous ones. Scrub makes the whole sequence reversible. */
+      if (isMobile) {
+        const stack = stackRef.current;
+        if (stack) {
+          const layers = Array.from(stack.querySelectorAll(".why__stack-layer"));
+          if (layers.length > 0) {
+            stack.classList.add("why__stack--engaged");
+            stack.style.setProperty("--why-stack-count", layers.length);
+
+            gsap.set(layers, { yPercent: 100 });
+            gsap.set(layers[0], { yPercent: 0 });
+
+            const tl = gsap.timeline({
+              defaults: { ease: "none" },
+              scrollTrigger: {
+                trigger: stack,
+                start: "top top",
+                end: "bottom bottom",
+                scrub: true,
+              },
+            });
+            layers.forEach((layer, i) => {
+              if (i === 0) return;
+              tl.fromTo(
+                layer,
+                { yPercent: 100 },
+                { yPercent: 0, duration: 1 / (layers.length - 1), immediateRender: false },
+                (i - 1) / (layers.length - 1)
+              );
+            });
+          }
+        }
       }
     }, section);
 
@@ -352,9 +427,15 @@ export default function WhyBeyond({ media }) {
           <EditorialMedia media={media} mediaRef={mediaWrapRef} frameRef={frameRef} />
 
           <div className="why__cards" ref={cardsWrapRef}>
-            {FEATURES.map((feature) => (
-              <FeatureCard key={feature.id} feature={feature} />
-            ))}
+            <div className="why__stack" ref={stackRef}>
+              <div className="why__stack-pin">
+                {FEATURES.map((feature, index) => (
+                  <div className="why__stack-layer" key={feature.id}>
+                    <FeatureCard feature={feature} index={index} />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

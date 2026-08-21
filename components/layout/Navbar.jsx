@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import gsap from "gsap";
 import {
   Heart,
@@ -16,6 +17,7 @@ import ThemeToggle from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { useCart } from "@/lib/shop/commerce";
 
+import HeaderSearch from "./HeaderSearch";
 import MegaMenu from "./MegaMenu";
 import MobileDrawer from "./MobileDrawer";
 import "./navbar.css";
@@ -23,14 +25,10 @@ import "./navbar.css";
 const NAV_LINKS = [
   { label: "Home", href: "/", current: true },
   { label: "Shop", href: "/shop" },
-  { label: "New Arrivals", href: "/shop" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
 ];
 
 const NAV_ACTIONS = [
   { label: "Cart", href: "/cart", Icon: ShoppingBag },
-  { label: "Search", href: "/search", Icon: Search },
   { label: "Wishlist", href: "/wishlist", Icon: Heart },
   { label: "Account", href: "/account", Icon: UserRound },
 ];
@@ -80,6 +78,9 @@ function readThemeTokens() {
 export default function Navbar() {
   const { theme } = useTheme();
   const { itemCount, wishlistCount } = useCart();
+  const pathname = usePathname();
+  const router = useRouter();
+  const isHome = pathname === "/";
   const headerRef = useRef(null);
   const surfaceRef = useRef(null);
   const innerRef = useRef(null);
@@ -108,6 +109,8 @@ export default function Navbar() {
       const compact = window.scrollY > 50;
       compactRef.current = compact;
       const tokens = readThemeTokens();
+
+      header.dataset.scrolled = compact ? "true" : "false";
 
       gsap.set(surface, {
         backgroundColor: compact ? tokens.surface : tokens.surfaceTransparent,
@@ -148,6 +151,8 @@ export default function Navbar() {
       if (compact === compactRef.current) return;
       compactRef.current = compact;
       const tokens = readThemeTokens();
+
+      header.dataset.scrolled = compact ? "true" : "false";
 
       gsap.killTweensOf(surface);
       gsap.to(surface, {
@@ -253,7 +258,11 @@ export default function Navbar() {
       ease: "power3.out",
     });
     gsap.to(label, {
-      color: entering ? tokens.goldLight : tokens.offWhite,
+      color: entering
+        ? tokens.goldLight
+        : compactRef.current || !isHome
+          ? tokens.offWhite
+          : "#faf8f4",
       opacity: entering ? 1 : 0.84,
       duration: reducedMotion ? 0 : 0.34,
       ease: "power3.out",
@@ -279,7 +288,7 @@ export default function Navbar() {
   };
 
   return (
-    <header ref={headerRef} className="luxury-navbar">
+    <header ref={headerRef} className="luxury-navbar" data-scrolled="false" data-hero={isHome ? "true" : "false"}>
       <div ref={surfaceRef} className="luxury-navbar__surface">
         <div ref={innerRef} className="luxury-navbar__inner">
           <Link
@@ -288,7 +297,6 @@ export default function Navbar() {
             href="/"
             aria-label="Beyond Buttons home"
           >
-            <span className="luxury-navbar__brand-frame" aria-hidden="true" />
             <Image
               src="/images/logo.png"
               alt="Beyond Buttons"
@@ -356,6 +364,7 @@ export default function Navbar() {
           </nav>
 
           <div className="luxury-navbar__actions" aria-label="Customer tools">
+            <HeaderSearch />
             {NAV_ACTIONS.map(({ label, href, Icon }) => {
               const count = label === "Cart" ? itemCount : label === "Wishlist" ? wishlistCount : 0;
               
@@ -382,6 +391,13 @@ export default function Navbar() {
           </div>
 
           <div className="luxury-navbar__mobile-controls">
+            <Link
+              href="/search"
+              className="luxury-navbar__search-toggle"
+              aria-label="Search products"
+            >
+              <Search aria-hidden="true" size={21} strokeWidth={1.4} />
+            </Link>
             <ThemeToggle />
             <button
               ref={menuButtonRef}

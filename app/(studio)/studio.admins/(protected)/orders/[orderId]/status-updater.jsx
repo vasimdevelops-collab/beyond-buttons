@@ -5,8 +5,25 @@ import { useState } from "react";
 
 import { toast } from "@/components/toast/toast-store";
 
-const PAYMENT_OPTIONS = ["pending", "paid", "failed", "refunded"];
-const SHIPPING_OPTIONS = ["pending", "processing", "shipped", "delivered", "cancelled"];
+function getCsrfToken() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return meta?.getAttribute("content") || null;
+}
+
+const PAYMENT_OPTIONS = [
+  { value: "pending", label: "Pending" },
+  { value: "paid", label: "Paid" },
+  { value: "failed", label: "Failed" },
+  { value: "refunded", label: "Refunded" },
+];
+
+const SHIPPING_OPTIONS = [
+  { value: "pending", label: "Pending" },
+  { value: "processing", label: "Processing" },
+  { value: "shipped", label: "Shipped" },
+  { value: "delivered", label: "Delivered" },
+  { value: "cancelled", label: "Cancelled" },
+];
 
 export function OrderStatusUpdater({ order }) {
   const router = useRouter();
@@ -25,10 +42,15 @@ export function OrderStatusUpdater({ order }) {
     setMessage({ text: "", isError: false });
 
     try {
-      // Use the dedicated admin orders API — not the customer-facing endpoint.
+      const csrfToken = getCsrfToken();
+      const headers = { "Content-Type": "application/json" };
+      if (csrfToken) {
+        headers["x-csrf-token"] = csrfToken;
+      }
+
       const response = await fetch(`/api/admin/orders/${encodeURIComponent(order.id)}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(form),
       });
 
@@ -40,7 +62,6 @@ export function OrderStatusUpdater({ order }) {
 
       setMessage({ text: "Order updated successfully.", isError: false });
       toast.success("Order updated");
-      // Refresh the server component data without a full navigation.
       router.refresh();
     } catch (err) {
       setMessage({ text: err?.message || "Unable to update order.", isError: true });
@@ -51,78 +72,82 @@ export function OrderStatusUpdater({ order }) {
   }
 
   return (
-    <form className="studio-section" onSubmit={handleSubmit} aria-label="Order status editor">
-      <header className="studio-section__header">
-        <h2 className="studio-section__title">Order controls</h2>
-        <p className="studio-section__copy">Update payment and shipment progress.</p>
+    <section className="studio-card studio-orders__status-updater" aria-label="Order status editor">
+      <header className="studio-card__header">
+        <h2 className="studio-card__title">Order Controls</h2>
+        <p className="studio-card__copy">Update payment and shipment progress.</p>
       </header>
+      <div className="studio-card__content">
+        <form onSubmit={handleSubmit} className="studio-orders__updater-form">
+          <div className="studio-orders__updater-grid">
+            <label className="studio-field studio-orders__field">
+              <span className="studio-field__label">Payment Status</span>
+              <select
+                value={form.paymentStatus}
+                onChange={(e) => setForm((f) => ({ ...f, paymentStatus: e.target.value }))}
+                className="studio-field__select"
+              >
+                {PAYMENT_OPTIONS.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </label>
 
-      <div className="studio-section__fields">
-        <label className="studio-field">
-          <span className="studio-field__label">Payment status</span>
-          <select
-            value={form.paymentStatus}
-            onChange={(e) => setForm((f) => ({ ...f, paymentStatus: e.target.value }))}
-          >
-            {PAYMENT_OPTIONS.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </label>
+            <label className="studio-field studio-orders__field">
+              <span className="studio-field__label">Shipping Status</span>
+              <select
+                value={form.shippingStatus}
+                onChange={(e) => setForm((f) => ({ ...f, shippingStatus: e.target.value }))}
+                className="studio-field__select"
+              >
+                {SHIPPING_OPTIONS.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </label>
 
-        <label className="studio-field">
-          <span className="studio-field__label">Shipping status</span>
-          <select
-            value={form.shippingStatus}
-            onChange={(e) => setForm((f) => ({ ...f, shippingStatus: e.target.value }))}
-          >
-            {SHIPPING_OPTIONS.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </label>
+            <label className="studio-field studio-orders__field studio-orders__field--full">
+              <span className="studio-field__label">Courier</span>
+              <input
+                type="text"
+                value={form.courier}
+                onChange={(e) => setForm((f) => ({ ...f, courier: e.target.value }))}
+                placeholder="e.g. Blue Dart, Delhivery"
+                autoComplete="off"
+                className="studio-field__input"
+              />
+            </label>
 
-        <label className="studio-field">
-          <span className="studio-field__label">Courier</span>
-          <input
-            type="text"
-            value={form.courier}
-            onChange={(e) => setForm((f) => ({ ...f, courier: e.target.value }))}
-            placeholder="e.g. Blue Dart, Delhivery"
-            autoComplete="off"
-          />
-        </label>
+            <label className="studio-field studio-orders__field studio-orders__field--full">
+              <span className="studio-field__label">Tracking ID</span>
+              <input
+                type="text"
+                value={form.tracking}
+                onChange={(e) => setForm((f) => ({ ...f, tracking: e.target.value }))}
+                placeholder="AWB or tracking number"
+                autoComplete="off"
+                className="studio-field__input"
+              />
+            </label>
+          </div>
 
-        <label className="studio-field">
-          <span className="studio-field__label">Tracking ID</span>
-          <input
-            type="text"
-            value={form.tracking}
-            onChange={(e) => setForm((f) => ({ ...f, tracking: e.target.value }))}
-            placeholder="AWB or tracking number"
-            autoComplete="off"
-          />
-        </label>
+          {message.text ? (
+            <div
+              className={`studio-notice ${message.isError ? "studio-notice--error" : "studio-notice--success"}`}
+              role="alert"
+              style={{ marginTop: 16 }}
+            >
+              <p className="studio-notice__text">{message.text}</p>
+            </div>
+          ) : null}
+
+          <div className="studio-orders__updater-actions">
+            <button className="studio-btn studio-btn--primary" type="submit" disabled={saving}>
+              {saving ? "Saving…" : "Save Changes"}
+            </button>
+          </div>
+        </form>
       </div>
-
-      {message.text ? (
-        <p
-          role="alert"
-          style={{
-            margin: "12px 0 0",
-            color: message.isError ? "#f7a1a1" : "var(--goldLight, var(--gold))",
-            fontSize: "0.875rem",
-          }}
-        >
-          {message.text}
-        </p>
-      ) : null}
-
-      <div style={{ marginTop: 18, display: "flex", justifyContent: "flex-end" }}>
-        <button className="studio-btn studio-btn--primary" type="submit" disabled={saving}>
-          {saving ? "Saving…" : "Save status"}
-        </button>
-      </div>
-    </form>
+    </section>
   );
 }

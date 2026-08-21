@@ -81,9 +81,11 @@ export default function ProductDetails({ product }) {
   const [activeColor, setActiveColor] = useState(0);
   const [activeMedia, setActiveMedia] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState(
-    () => product?.sizes?.find((entry) => String(entry?.size || "").trim())?.size || ""
-  );
+  const [selectedSize, setSelectedSize] = useState(() => {
+    const source = Array.isArray(product?.sizes) ? product.sizes : [];
+    const first = source.find((entry) => Number(entry?.stock ?? 0) > 0) || source[0];
+    return String(first?.size || first || "").trim();
+  });
   const [quantity, setQuantity] = useState(1);
   const [pincode, setPincode] = useState("");
   const [deliveryChecked, setDeliveryChecked] = useState(false);
@@ -104,6 +106,7 @@ export default function ProductDetails({ product }) {
     })).filter((entry) => entry.size);
   }, [color?.sizes, product?.sizes, color, product]);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const gallery = useMemo(() => {
     const combined = [...(color?.gallery || []), ...(product?.gallery || [])];
     const seen = new Set();
@@ -114,11 +117,21 @@ export default function ProductDetails({ product }) {
 
   const current = gallery[activeMedia] || gallery[0];
   const selectedSizeOption = colorSizes.find((entry) => entry.size === selectedSize) || null;
-  const selectedStock = Math.max(1, Number(selectedSizeOption?.stock ?? 10) || 10);
+  const rawStock = selectedSizeOption ? Number(selectedSizeOption.stock ?? 0) : 0;
+  const maxQuantity = Math.max(1, rawStock);
   const price = formatPrice(Number(product?.price) || 0);
   const comparePrice = formatPrice(product?.comparePrice);
-  const canPurchase = Boolean(selectedSize);
+  const canPurchase = Boolean(selectedSize && selectedSizeOption && rawStock > 0);
   const wishlist = Boolean(product?.id ? isInWishlist(product.id) : false);
+  const stockLevel = !selectedSize ? "none" : rawStock <= 0 ? "out" : rawStock <= 10 ? "low" : "in";
+  const stockLabel = !selectedSize
+    ? "Select a size"
+    : stockLevel === "out"
+      ? "Out of stock"
+      : stockLevel === "low"
+        ? "Only a few left"
+        : "In stock";
+  const fabric = product.fabric || {};
 
   useEffect(() => {
     mountedRef.current = true;
@@ -337,6 +350,17 @@ export default function ProductDetails({ product }) {
   const chooseColor = (index) => {
     setActiveColor(index);
     setActiveMedia(0);
+    const nextColor = product?.colors?.[index];
+    const nextSizes =
+      Array.isArray(nextColor?.sizes) && nextColor.sizes.length
+        ? nextColor.sizes
+        : product?.sizes || [];
+    const nextSize =
+      nextSizes.find((entry) => Number(entry?.stock ?? 0) > 0)?.size ||
+      nextSizes[0]?.size ||
+      "";
+    setSelectedSize(nextSize);
+    setQuantity(1);
   };
 
   const chooseSize = (entry) => {
@@ -484,7 +508,7 @@ export default function ProductDetails({ product }) {
             </div>
           </div>
 
-          <aside className="pdp__purchase" data-purchase>
+          <aside className="pdp__purchase" data-purchase id="pdp-purchase">
             <header className="pdp__purchase-header">
               <p className="pdp__category">{product.category}</p>
               <h1 className="pdp__title">{title}</h1>
@@ -497,6 +521,45 @@ export default function ProductDetails({ product }) {
               {price ? <span>{price}</span> : <span aria-hidden="true">—</span>}
               {comparePrice ? <del>{comparePrice}</del> : null}
             </div>
+
+            <div className="pdp__meta" aria-label="Availability">
+              <span className="pdp__stock" data-level={stockLevel}>
+                <span className="pdp__stock-dot" aria-hidden="true" />
+                {stockLabel}
+              </span>
+              {selectedSizeOption?.sku ? (
+                <span className="pdp__sku">SKU · {selectedSizeOption.sku}</span>
+              ) : null}
+            </div>
+
+            {fabric.material || fabric.gsm || fabric.finish || fabric.origin ? (
+              <dl className="pdp__specs">
+                {fabric.material ? (
+                  <div>
+                    <dt>Material</dt>
+                    <dd>{fabric.material}</dd>
+                  </div>
+                ) : null}
+                {fabric.gsm ? (
+                  <div>
+                    <dt>Weight</dt>
+                    <dd>{fabric.gsm}</dd>
+                  </div>
+                ) : null}
+                {fabric.finish ? (
+                  <div>
+                    <dt>Finish</dt>
+                    <dd>{fabric.finish}</dd>
+                  </div>
+                ) : null}
+                {fabric.origin ? (
+                  <div>
+                    <dt>Origin</dt>
+                    <dd>{fabric.origin}</dd>
+                  </div>
+                ) : null}
+              </dl>
+            ) : null}
 
             {product.colors?.length ? (
               <fieldset className="pdp__field">
@@ -531,10 +594,15 @@ export default function ProductDetails({ product }) {
                       type="button"
                       className="pdp__size"
                       aria-pressed={selectedSize === entry.size}
+                      disabled={Number(entry?.stock ?? 0) <= 0}
+                      aria-disabled={Number(entry?.stock ?? 0) <= 0}
                       data-luxury-action
                       onClick={() => chooseSize(entry)}
                     >
-                      {entry.size}
+                      <span>{entry.size}</span>
+                      {Number(entry?.stock ?? 0) <= 0 ? (
+                        <small className="pdp__size-stock">Out of Stock</small>
+                      ) : null}
                     </button>
                   ))}
                 </div>
@@ -557,10 +625,10 @@ export default function ProductDetails({ product }) {
                 <button
                   type="button"
                   aria-label="Increase quantity"
-                  disabled={!selectedSize || quantity >= selectedStock}
+                  disabled={!selectedSize || quantity >= maxQuantity}
                   data-luxury-action
                   onClick={() =>
-                    setQuantity((value) => Math.min(selectedStock, value + 1))
+                    setQuantity((value) => Math.min(maxQuantity, value + 1))
                   }
                 >
                   <Plus size={14} aria-hidden="true" />
@@ -656,8 +724,92 @@ export default function ProductDetails({ product }) {
             >
               Buy Now
             </button>
+
+            <div className="pdp__accordion">
+              {product.story ? (
+                <details className="pdp__accordion-item">
+                  <summary>
+                    The Story
+                    <ChevronRight size={15} strokeWidth={1.4} aria-hidden="true" />
+                  </summary>
+                  <p>{product.story}</p>
+                </details>
+              ) : null}
+
+              {product.care?.length ? (
+                <details className="pdp__accordion-item">
+                  <summary>
+                    Care Instructions
+                    <ChevronRight size={15} strokeWidth={1.4} aria-hidden="true" />
+                  </summary>
+                  <ul>
+                    {product.care.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
+
+              <details className="pdp__accordion-item">
+                <summary>
+                  Delivery & Returns
+                  <ChevronRight size={15} strokeWidth={1.4} aria-hidden="true" />
+                </summary>
+                <div className="pdp__delivery-returns">
+                  <section>
+                    <h4>Delivery</h4>
+                    <ul>
+                      {product.shipping?.freeShipping ? (
+                        <li>Free standard delivery (4–6 business days) on this product.</li>
+                      ) : (
+                        <li>Standard delivery: 4–6 business days (₹199).</li>
+                      )}
+                      <li>Express delivery: 1–2 business days (₹399).</li>
+                      {product.shipping?.cod ? <li>Cash on Delivery (COD) available.</li> : null}
+                      <li>Orders placed before 2 PM IST ship the same business day.</li>
+                      <li>You will receive a tracking link via email & SMS once dispatched.</li>
+                    </ul>
+                  </section>
+                  <section>
+                    <h4>Returns & Exchanges</h4>
+                    <ul>
+                      {product.shipping?.returnDays ? (
+                        <li>{product.shipping.returnDays}-day return & exchange window from delivery date.</li>
+                      ) : (
+                        <li>7-day return & exchange window from delivery date.</li>
+                      )}
+                      <li>Items must be unworn, unwashed, with original tags and packaging intact.</li>
+                      <li>Free return pickup for eligible items — we arrange the reverse shipment.</li>
+                      <li>Refunds are issued to the original payment method within 5–7 business days of receiving the return.</li>
+                      <li>Exchanges for size/color are processed as a new order once the return is scanned by the courier.</li>
+                    </ul>
+                  </section>
+                  <p className="pdp__policy-note">
+                    For full policy details, visit our <Link href="/shipping">Shipping & Returns</Link> page
+                    or <Link href="/contact">contact us</Link>.
+                  </p>
+                </div>
+              </details>
+            </div>
           </aside>
         </div>
+      </div>
+
+      <div className="pdp__sticky" aria-hidden={!canPurchase}>
+        <div className="pdp__sticky-price">
+          <span>{price || "—"}</span>
+          {comparePrice ? <del>{comparePrice}</del> : null}
+        </div>
+        <button
+          type="button"
+          className="pdp__sticky-cta"
+          disabled={!canPurchase}
+          data-luxury-action
+          onClick={handleAddToCart}
+        >
+          <ShoppingBag size={16} strokeWidth={1.5} aria-hidden="true" />
+          Add To Bag
+        </button>
       </div>
 
       <div

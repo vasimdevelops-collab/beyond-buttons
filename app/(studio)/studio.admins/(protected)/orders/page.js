@@ -61,6 +61,34 @@ function formatPaymentMethod(method) {
   return PAYMENT_METHOD_LABELS[method] || "Online";
 }
 
+function getStatusColor(status) {
+  const colors = {
+    pending: "var(--gold, #d4af37)",
+    paid: "var(--success, #2ecc71)",
+    failed: "var(--danger, #e74c3c)",
+    refunded: "var(--text-muted, #888)",
+    processing: "var(--gold, #d4af37)",
+    shipped: "var(--info, #3498db)",
+    delivered: "var(--success, #2ecc71)",
+    cancelled: "var(--danger, #e74c3c)",
+  };
+  return colors[status?.toLowerCase()] || "var(--text-muted, #888)";
+}
+
+function getStatusBg(status) {
+  const bgs = {
+    pending: "rgba(212, 175, 55, 0.12)",
+    paid: "rgba(46, 204, 113, 0.12)",
+    failed: "rgba(231, 76, 60, 0.12)",
+    refunded: "rgba(136, 136, 136, 0.12)",
+    processing: "rgba(212, 175, 55, 0.12)",
+    shipped: "rgba(52, 152, 219, 0.12)",
+    delivered: "rgba(46, 204, 113, 0.12)",
+    cancelled: "rgba(231, 76, 60, 0.12)",
+  };
+  return bgs[status?.toLowerCase()] || "rgba(136, 136, 136, 0.12)";
+}
+
 export default function StudioOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
@@ -112,10 +140,12 @@ export default function StudioOrdersPage() {
   // Initial load
   useEffect(() => {
     mountedRef.current = true;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchOrders();
+    const timer = setTimeout(() => {
+      if (mountedRef.current) fetchOrders();
+    }, 0);
     return () => {
       mountedRef.current = false;
+      clearTimeout(timer);
     };
   }, []);
 
@@ -140,9 +170,11 @@ export default function StudioOrdersPage() {
     fetchOrders({ page: nextPage });
   }
 
+  const hasFilters = search || paymentStatus || shippingStatus;
+
   return (
     <>
-      <header className="studio-main__header studio-products__header">
+      <header className="studio-main__header studio-orders__header">
         <div>
           <p className="studio-main__eyebrow">Beyond Buttons Studio</p>
           <h1 className="studio-main__title">Orders</h1>
@@ -151,70 +183,90 @@ export default function StudioOrdersPage() {
             {pagination.total > 0 && !loading ? ` ${pagination.total} total.` : ""}
           </p>
         </div>
+        {hasFilters && (
+          <button
+            type="button"
+            className="studio-btn studio-btn--ghost studio-orders__clear-filters"
+            onClick={() => {
+              setSearch("");
+              setPaymentStatus("");
+              setShippingStatus("");
+              fetchOrders({ page: 1, search: "", paymentStatus: "", shippingStatus: "", sort });
+            }}
+          >
+            Clear filters
+          </button>
+        )}
       </header>
 
       {/* Toolbar */}
-      <section className="studio-toolbar" aria-label="Order filters">
+      <section className="studio-toolbar studio-orders__toolbar" aria-label="Order filters">
         <form className="studio-toolbar__search" onSubmit={handleSearch} role="search">
-          <label className="studio-field">
+          <label className="studio-field studio-field--search">
             <span className="studio-field__label">Search</span>
-            <input
-              type="search"
-              name="q"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Order number or customer name"
-              autoComplete="off"
-            />
+            <div className="studio-field__input-wrapper">
+              <input
+                type="search"
+                name="q"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Order number or customer name"
+                autoComplete="off"
+              />
+            </div>
           </label>
-          <button type="submit" className="studio-btn studio-btn--ghost">
+          <button type="submit" className="studio-btn studio-btn--primary studio-toolbar__search-btn">
             Search
           </button>
         </form>
 
-        <label className="studio-field">
-          <span className="studio-field__label">Payment</span>
-          <select
-            value={paymentStatus}
-            onChange={(e) => handleFilterChange("paymentStatus", e.target.value)}
-          >
-            {PAYMENT_FILTERS.map((f) => (
-              <option key={f.value} value={f.value}>{f.label}</option>
-            ))}
-          </select>
-        </label>
+        <div className="studio-toolbar__filters">
+          <label className="studio-field">
+            <span className="studio-field__label">Payment</span>
+            <select
+              value={paymentStatus}
+              onChange={(e) => handleFilterChange("paymentStatus", e.target.value)}
+            >
+              {PAYMENT_FILTERS.map((f) => (
+                <option key={f.value} value={f.value}>{f.label}</option>
+              ))}
+            </select>
+          </label>
 
-        <label className="studio-field">
-          <span className="studio-field__label">Shipping</span>
-          <select
-            value={shippingStatus}
-            onChange={(e) => handleFilterChange("shippingStatus", e.target.value)}
-          >
-            {SHIPPING_FILTERS.map((f) => (
-              <option key={f.value} value={f.value}>{f.label}</option>
-            ))}
-          </select>
-        </label>
+          <label className="studio-field">
+            <span className="studio-field__label">Shipping</span>
+            <select
+              value={shippingStatus}
+              onChange={(e) => handleFilterChange("shippingStatus", e.target.value)}
+            >
+              {SHIPPING_FILTERS.map((f) => (
+                <option key={f.value} value={f.value}>{f.label}</option>
+              ))}
+            </select>
+          </label>
 
-        <label className="studio-field">
-          <span className="studio-field__label">Sort</span>
-          <select
-            value={sort}
-            onChange={(e) => handleFilterChange("sort", e.target.value)}
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
-        </label>
+          <label className="studio-field">
+            <span className="studio-field__label">Sort</span>
+            <select
+              value={sort}
+              onChange={(e) => handleFilterChange("sort", e.target.value)}
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
       </section>
 
       {error ? (
-        <p role="alert" style={{ color: "#f7a1a1", padding: "12px 0" }}>{error}</p>
+        <div className="studio-notice studio-notice--error" role="alert">
+          <p className="studio-notice__text">{error}</p>
+        </div>
       ) : null}
 
       <section
-        className="studio-table"
+        className="studio-table studio-orders__table"
         data-state={loading ? "loading" : orders.length ? "ready" : "empty"}
         aria-label="Orders"
       >
@@ -222,6 +274,7 @@ export default function StudioOrdersPage() {
           <span>Order</span>
           <span>Date</span>
           <span>Customer</span>
+          <span>Items</span>
           <span>Total</span>
           <span>Payment</span>
           <span>Shipping</span>
@@ -229,14 +282,32 @@ export default function StudioOrdersPage() {
 
         {loading ? (
           <div className="studio-table__empty" role="status">
-            <p className="studio-table__empty-title">Loading orders…</p>
+            <div className="studio-table__skeleton" aria-hidden="true">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="studio-table__skeleton-row">
+                  <div className="studio-table__skeleton-cell" style={{ width: "28%" }} />
+                  <div className="studio-table__skeleton-cell" style={{ width: "12%" }} />
+                  <div className="studio-table__skeleton-cell" style={{ width: "18%" }} />
+                  <div className="studio-table__skeleton-cell" style={{ width: "10%" }} />
+                  <div className="studio-table__skeleton-cell" style={{ width: "12%" }} />
+                  <div className="studio-table__skeleton-cell" style={{ width: "10%" }} />
+                  <div className="studio-table__skeleton-cell" style={{ width: "10%" }} />
+                </div>
+              ))}
+            </div>
           </div>
         ) : orders.length === 0 ? (
           <div className="studio-table__empty" role="status">
+            <div className="studio-table__empty-icon" aria-hidden="true">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
             <p className="studio-table__empty-title">No orders found</p>
             <p className="studio-table__empty-copy">
               {search || paymentStatus || shippingStatus
-                ? "Try adjusting your filters."
+                ? "Try adjusting your filters or search terms."
                 : "Customer orders will appear here once checkout is completed."}
             </p>
           </div>
@@ -245,21 +316,40 @@ export default function StudioOrdersPage() {
             {orders.map((order) => (
               <li key={order.id}>
                 <Link className="studio-table__row" href={`/studio.admins/orders/${order.id}`}>
-                  <span className="studio-table__product">
+                  <span className="studio-table__order">
                     <strong>{order.orderNumber || order.id}</strong>
                     <small>{order.itemCount} item{order.itemCount !== 1 ? "s" : ""}</small>
                   </span>
                   <span>{formatDate(order.createdAt)}</span>
-                  <span>{order.customerName || "—"}</span>
-                  <span>{formatMoney(order.total)}</span>
-                  <span className="studio-table__status" data-status={order.paymentStatus}>
-                    {order.paymentStatus}
-                    {order.paymentMethod && order.paymentMethod !== "cod" ? (
-                      <small style={{ display: "block", opacity: 0.65 }}>{formatPaymentMethod(order.paymentMethod)}</small>
-                    ) : null}
+                  <span className="studio-table__customer">{order.customerName || "—"}</span>
+                  <span>{order.itemCount}</span>
+                  <span className="studio-table__total">{formatMoney(order.total)}</span>
+                  <span className="studio-table__status-cell">
+                    <span
+                      className="studio-badge studio-badge--status"
+                      style={{
+                        backgroundColor: getStatusBg(order.paymentStatus),
+                        color: getStatusColor(order.paymentStatus),
+                      }}
+                      data-status={order.paymentStatus}
+                    >
+                      {order.paymentStatus}
+                      {order.paymentMethod && order.paymentMethod !== "cod" ? (
+                        <small style={{ marginLeft: 6, opacity: 0.7, fontWeight: 400 }}>{formatPaymentMethod(order.paymentMethod)}</small>
+                      ) : null}
+                    </span>
                   </span>
-                  <span className="studio-table__status" data-status={order.shippingStatus}>
-                    {order.shippingStatus}
+                  <span className="studio-table__status-cell">
+                    <span
+                      className="studio-badge studio-badge--status"
+                      style={{
+                        backgroundColor: getStatusBg(order.shippingStatus),
+                        color: getStatusColor(order.shippingStatus),
+                      }}
+                      data-status={order.shippingStatus}
+                    >
+                      {order.shippingStatus}
+                    </span>
                   </span>
                 </Link>
               </li>
@@ -271,8 +361,8 @@ export default function StudioOrdersPage() {
       {/* Pagination */}
       {pagination.pages > 1 ? (
         <nav
+          className="studio-pagination studio-orders__pagination"
           aria-label="Orders pagination"
-          style={{ display: "flex", gap: 8, marginTop: 16, justifyContent: "flex-end" }}
         >
           <button
             type="button"
@@ -280,9 +370,34 @@ export default function StudioOrdersPage() {
             disabled={page <= 1}
             onClick={() => handlePageChange(page - 1)}
           >
-            ← Prev
+            ← Previous
           </button>
-          <span style={{ display: "flex", alignItems: "center", fontSize: "0.875rem", opacity: 0.7 }}>
+          <div className="studio-pagination__pages">
+            {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+              let pageNum;
+              if (pagination.pages <= 5) {
+                pageNum = i + 1;
+              } else if (page <= 3) {
+                pageNum = i + 1;
+              } else if (page >= pagination.pages - 2) {
+                pageNum = pagination.pages - 4 + i;
+              } else {
+                pageNum = page - 2 + i;
+              }
+              return (
+                <button
+                  key={pageNum}
+                  type="button"
+                  className={`studio-pagination__page ${page === pageNum ? "is-active" : ""}`}
+                  onClick={() => handlePageChange(pageNum)}
+                  aria-current={page === pageNum ? "page" : undefined}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+          <span className="studio-pagination__info">
             Page {page} of {pagination.pages}
           </span>
           <button

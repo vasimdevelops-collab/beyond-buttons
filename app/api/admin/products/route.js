@@ -1,7 +1,21 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { requireAdmin } from "@/lib/admin/session";
 import { bootstrapDatabase, ProductModel } from "@/lib/database/register";
+
+function revalidateProductPages(slug) {
+  const productSlug = String(slug || "").trim();
+  const paths = ["/", "/shop", "/sitemap"];
+  if (productSlug) paths.push(`/product/${productSlug}`);
+  for (const path of paths) {
+    try {
+      revalidatePath(path);
+    } catch {
+      // Revalidation is best-effort; a failed revalidate must not fail the save.
+    }
+  }
+}
 
 function slugify(value = "") {
   return String(value)
@@ -160,6 +174,8 @@ function normalizeProductDoc(doc) {
     pricing: {
       basePrice: Number(doc.price) || null,
       comparePrice: Number(doc.comparePrice) || null,
+      globalPrice: Number(doc.price) || null,
+      compareAtPrice: Number(doc.comparePrice) || null,
     },
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
@@ -183,14 +199,38 @@ export async function GET(request) {
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
 
+    // Server-side filtering so search/status/category work across the whole
+    // catalog, not just the currently loaded page.
+    const filter = {};
+    const rawQuery = (searchParams.get("q") || "").trim().toLowerCase();
+    const rawStatus = (searchParams.get("status") || "").trim().toLowerCase();
+    const rawCategory = (searchParams.get("category") || "").trim();
+
+    if (rawQuery) {
+      const escaped = rawQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(escaped, "i");
+      filter.$or = [
+        { "generalInformation.name": regex },
+        { slug: regex },
+        { id: regex },
+        { categoryName: regex },
+      ];
+    }
+    if (rawStatus && rawStatus !== "all") {
+      filter.status = rawStatus;
+    }
+    if (rawCategory && rawCategory !== "all") {
+      filter.categoryName = rawCategory;
+    }
+
     const [docs, total] = await Promise.all([
-      ProductModel.find({})
+      ProductModel.find(filter)
         .sort({ updatedAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
         .lean()
         .exec(),
-      ProductModel.countDocuments({}),
+      ProductModel.countDocuments(filter),
     ]);
 
     return NextResponse.json({
@@ -274,6 +314,7 @@ export async function POST(request) {
       { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
     ).lean().exec();
 
+    revalidateProductPages(slug);
     return NextResponse.json(normalizeProductDoc(created || doc));
   } catch (error) {
     console.error("[admin/products] POST failed:", error);
@@ -352,6 +393,7 @@ export async function PUT(request) {
       { returnDocument: "after", upsert: true }
     ).lean().exec();
 
+    revalidateProductPages(slug);
     return NextResponse.json(normalizeProductDoc(doc || { id, ...update }));
   } catch (error) {
     console.error("[admin/products] PUT failed:", error);
@@ -370,7 +412,9 @@ export async function DELETE(request) {
       return NextResponse.json({ error: "Missing product id" }, { status: 400 });
     }
 
+    const existing = await ProductModel.findOne({ id }).select("slug").lean().exec();
     await ProductModel.deleteOne({ id });
+    revalidateProductPages(existing?.slug);
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[admin/products] DELETE failed:", error);

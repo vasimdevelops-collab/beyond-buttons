@@ -100,7 +100,7 @@ export default function StudioAdminPage() {
       <header className="studio-main__header studio-products__header">
         <div>
           <p className="studio-main__eyebrow">Beyond Buttons Studio</p>
-          <h1 className="studio-main__title">Admin</h1>
+          <h1 className="studio-main__title">Change Admin Password</h1>
           <p className="studio-main__copy">
             Manage the single admin account used to sign in to this Studio.
           </p>

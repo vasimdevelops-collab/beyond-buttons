@@ -1,22 +1,21 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
 import {
   Heart,
-  Search,
   ShoppingBag,
   UserRound,
   X,
 } from "lucide-react";
 
+import { getProducts } from "@/lib/data";
 import { getShopMenuItems } from "./MegaMenu";
 
 const MOBILE_ACTIONS = [
   { label: "Cart", href: "/cart", Icon: ShoppingBag },
-  { label: "Search", href: "/search", Icon: Search },
   { label: "Wishlist", href: "/wishlist", Icon: Heart },
   { label: "Account", href: "/account", Icon: UserRound },
 ];
@@ -34,6 +33,12 @@ export default function MobileDrawer({
   const linksRef = useRef(null);
   const actionsRef = useRef(null);
   const hasOpenedRef = useRef(false);
+
+  const shopItems = useMemo(
+    () => getShopMenuItems().filter((item) => item.kind === "category"),
+    []
+  );
+  const feature = useMemo(() => getProducts()[0] || null, []);
 
   useLayoutEffect(() => {
     const drawer = drawerRef.current;
@@ -226,27 +231,61 @@ export default function MobileDrawer({
 
         <nav aria-label="Mobile">
           <ul ref={linksRef} className="luxury-drawer__links">
-            {links.map((link) => (
+            {links.map((link, index) => (
               <li key={link.label}>
                 <Link href={link.href} onClick={onNavigate}>
-                  <span>{link.label}</span>
-                  <span aria-hidden="true">↗</span>
+                  <span className="luxury-drawer__link-index">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="luxury-drawer__link-label">{link.label}</span>
+                  <span className="luxury-drawer__link-arrow" aria-hidden="true">↗</span>
                 </Link>
-                {link.label === "Shop" && (
-                  <ul className="luxury-drawer__shop" aria-label="Shop">
-                    {getShopMenuItems().map((item) => (
-                      <li key={item.id || item.label}>
-                        <Link href={item.href} onClick={onNavigate}>
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                {link.label === "Shop" && shopItems.length > 0 && (
+                  <div className="luxury-drawer__shop-block">
+                    <p className="luxury-drawer__shop-title">Collections</p>
+                    <ul className="luxury-drawer__shop" aria-label="Shop">
+                      {shopItems.map((item) => (
+                        <li key={item.id || item.label}>
+                          <Link href={item.href} onClick={onNavigate}>
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                    <Link
+                      className="luxury-drawer__shop-all"
+                      href="/shop"
+                      onClick={onNavigate}
+                    >
+                      View all products <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
                 )}
               </li>
             ))}
           </ul>
         </nav>
+
+        {feature ? (
+          <Link
+            className="luxury-drawer__feature"
+            href={`/product/${feature.slug}`}
+            onClick={onNavigate}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={feature.gallery?.[0]?.src || feature.gallery?.[0] || "/images/logo.png"}
+              alt=""
+            />
+            <span className="luxury-drawer__feature-overlay">
+              <span className="luxury-drawer__feature-eyebrow">New Arrivals</span>
+              <strong>{feature.name}</strong>
+              <span className="luxury-drawer__feature-cta">
+                Shop now <span aria-hidden="true">→</span>
+              </span>
+            </span>
+          </Link>
+        ) : null}
 
         <div ref={actionsRef} className="luxury-drawer__actions">
           {MOBILE_ACTIONS.map(({ label, href, Icon }) => (

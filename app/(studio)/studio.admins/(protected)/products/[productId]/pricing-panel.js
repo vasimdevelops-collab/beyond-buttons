@@ -4,6 +4,7 @@ const SIZE_KEYS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "Other"];
 
 const EMPTY_PRICING = {
   globalPrice: "",
+  comparePrice: "",
   differentPriceForColors: false,
   differentPriceForSizes: false,
   colorPrices: {},
@@ -50,22 +51,20 @@ export default function PricingPanel({ pricing, colors, onChange }) {
       className="studio-section"
       data-section="pricing"
       id="editor-panel-pricing"
-      role="tabpanel"
-      aria-labelledby="editor-tab-pricing"
     >
       <header className="studio-section__header">
         <h2 id="product-pricing-title" className="studio-section__title">
           Pricing
         </h2>
         <p className="studio-section__copy">
-          Set a global price, then optionally override by color or size. No
-          checkout math in this phase.
+          Set the price customers see. Per-color prices are optional extras for
+          special cases.
         </p>
       </header>
 
       <div className="studio-section__fields">
         <label className="studio-field">
-          <span className="studio-field__label">Global Price</span>
+          <span className="studio-field__label">Price (₹)</span>
           <input
             type="text"
             inputMode="decimal"
@@ -75,6 +74,23 @@ export default function PricingPanel({ pricing, colors, onChange }) {
             placeholder="0.00"
             autoComplete="off"
           />
+        </label>
+
+        <label className="studio-field">
+          <span className="studio-field__label">Compare-at Price (₹)</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            name="comparePrice"
+            value={pricing.comparePrice ?? ""}
+            onChange={(event) => patch({ comparePrice: event.target.value })}
+            placeholder="0.00"
+            autoComplete="off"
+          />
+          <span className="studio-field__hint">
+            Optional — shows a strikethrough original price, like{" "}
+            <s>₹1,799</s> ₹1,299. Leave blank for no discount.
+          </span>
         </label>
 
         <label className="studio-field studio-field--check studio-field--full">
@@ -98,7 +114,7 @@ export default function PricingPanel({ pricing, colors, onChange }) {
           <div className="studio-pricing-list studio-field--full" data-kind="colors">
             {colors.length === 0 ? (
               <p className="studio-pricing-list__empty">
-                Add colors in Variants to set color prices.
+                Add colors in &ldquo;Colors &amp; Sizes&rdquo; above to set per-color prices.
               </p>
             ) : (
               colors.map((color) => (

@@ -26,6 +26,10 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // Resolved once at module scope (server import) so the render path stays pure.
 const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * DAY_MS);
 
+// A "confirmed sale" for revenue purposes: online orders confirmed by the
+// Razorpay webhook (paid), or COD orders (payment collected on delivery).
+const SALE_MATCH = { $or: [{ paymentStatus: "paid" }, { paymentMethod: "cod" }] };
+
 function buildDailySeries(dailyRows, days = 30) {
   const byDate = new Map();
   for (const row of dailyRows) {
@@ -75,9 +79,9 @@ export default async function StudioAnalyticsPage() {
     CategoryModel.countDocuments(),
     MediaModel.countDocuments(),
     CouponModel.countDocuments(),
-    // Revenue: sum of PAID orders only (not pending/failed/refunded).
+    // Revenue: confirmed sales (paid online or COD).
     OrderModel.aggregate([
-      { $match: { paymentStatus: "paid" } },
+      { $match: SALE_MATCH },
       { $group: { _id: null, total: { $sum: "$total" } } },
     ]).then((rows) => rows[0]?.total || 0),
     // Order count by payment status.
@@ -88,11 +92,11 @@ export default async function StudioAnalyticsPage() {
     OrderModel.aggregate([
       { $group: { _id: "$shippingStatus", count: { $sum: 1 } } },
     ]),
-    // Daily sales (paid orders) for the last 30 days.
+    // Daily sales (confirmed orders) for the last 30 days.
     OrderModel.aggregate([
       {
         $match: {
-          paymentStatus: "paid",
+          ...SALE_MATCH,
           createdAt: { $gte: THIRTY_DAYS_AGO },
         },
       },
@@ -125,7 +129,7 @@ export default async function StudioAnalyticsPage() {
     { label: "Products", value: formatNumber(productCount), detail: "active catalog" },
     { label: "Customers", value: formatNumber(customerCount), detail: "registered accounts" },
     { label: "Orders", value: formatNumber(totalOrderCount), detail: "all time" },
-    { label: "Revenue", value: formatMoney(paidRevenue), detail: "paid orders only" },
+    { label: "Revenue", value: formatMoney(paidRevenue), detail: "paid + COD orders" },
     { label: "Categories", value: formatNumber(categoryCount), detail: "collections" },
     { label: "Media", value: formatNumber(mediaCount), detail: "uploaded assets" },
     { label: "Coupons", value: formatNumber(couponCount), detail: "total coupons" },
@@ -135,7 +139,7 @@ export default async function StudioAnalyticsPage() {
     { key: "products", label: "Products", value: formatNumber(productCount) },
     { key: "customers", label: "Customers", value: formatNumber(customerCount) },
     { key: "orders", label: "Orders (all)", value: formatNumber(totalOrderCount) },
-    { key: "revenue", label: "Revenue (paid)", value: formatMoney(paidRevenue) },
+    { key: "revenue", label: "Revenue", value: formatMoney(paidRevenue) },
     { key: "media", label: "Media", value: formatNumber(mediaCount) },
     { key: "coupons", label: "Coupons", value: formatNumber(couponCount) },
   ];
@@ -213,7 +217,7 @@ export default async function StudioAnalyticsPage() {
         <header className="studio-section__header">
           <h2 className="studio-section__title">Sales — last 30 days</h2>
           <p className="studio-section__copy">
-            Paid orders only. Bars = daily revenue, line = revenue trend.
+            Confirmed orders (paid + COD). Bars = daily revenue, line = revenue trend.
           </p>
         </header>
         <SalesChart series={salesSeries} />
@@ -224,7 +228,7 @@ export default async function StudioAnalyticsPage() {
         <header className="studio-section__header">
           <h2 className="studio-section__title">Orders by payment status</h2>
           <p className="studio-section__copy">
-            Revenue metric above reflects paid orders only.
+            Revenue metric includes paid and COD orders.
           </p>
         </header>
         <div className="studio-table" data-state="ready" aria-label="Payment status breakdown">

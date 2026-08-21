@@ -1,8 +1,10 @@
 import crypto from "crypto";
+import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
 import { bootstrapDatabase } from "@/lib/database/register";
 import { OrderModel } from "@/lib/database/models";
+import { decrementOrderStock } from "@/lib/shop/stock";
 import { sendTransactionalEmail } from "@/lib/email/smtp";
 import { buildPaymentConfirmationEmail } from "@/lib/email/templates";
 
@@ -10,43 +12,55 @@ const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
 
 async function updateOrderPaymentStatus(orderId, paymentId, status, signature, paymentMethod) {
   await bootstrapDatabase();
+  const mongoSession = await mongoose.startSession();
+  let updated;
+  let alreadyProcessed = false;
 
-  const order = await OrderModel.findOne({ id: orderId }).lean().exec();
-  if (!order) {
-    throw new Error(`Order not found: ${orderId}`);
-  }
+  try {
+    await mongoSession.withTransaction(async () => {
+      const order = await OrderModel.findOne({ id: orderId }).session(mongoSession).exec();
+      if (!order) throw new Error(`Order not found: ${orderId}`);
 
-  // Idempotency: dedupe on paymentId (unique per payment), not webhook signature
-  if (order.paymentId && order.paymentId === paymentId) {
-    return { order, alreadyProcessed: true };
-  }
+      // A duplicate captured event must never decrement stock twice.
+      if (status === "paid" && order.stockDecremented) {
+        updated = order.toObject();
+        alreadyProcessed = true;
+        return;
+      }
+      if (order.paymentId && order.paymentId === paymentId) {
+        updated = order.toObject();
+        alreadyProcessed = true;
+        return;
+      }
 
-  const update = {
-    paymentStatus: status,
-    paymentId,
-    paymentSignature: signature,
-    updatedAt: new Date().toISOString(),
-  };
-  if (paymentMethod) {
-    update.paymentMethod = paymentMethod;
-  }
+      if (status === "paid") {
+        // This atomic guarded decrement happens only after Razorpay has
+        // authenticated a payment.captured webhook.
+        await decrementOrderStock(order, { session: mongoSession });
+        order.stockDecremented = true;
+        order.stockRestored = false;
+      }
 
-  const updated = await OrderModel.findOneAndUpdate(
-    { id: orderId },
-    {
-      $set: update,
-      $push: {
-        statusHistory: {
+      order.paymentStatus = status;
+      order.paymentId = paymentId;
+      order.paymentSignature = signature;
+      order.paymentGatewayMethod = paymentMethod || "";
+      order.statusHistory = [
+        ...(Array.isArray(order.statusHistory) ? order.statusHistory : []),
+        {
           status: status === "paid" ? "payment_confirmed" : "payment_failed",
           timestamp: new Date().toISOString(),
           actor: "razorpay_webhook",
         },
-      },
-    },
-    { returnDocument: "after" }
-  ).lean().exec();
+      ];
+      await order.save({ session: mongoSession });
+      updated = order.toObject();
+    });
+  } finally {
+    await mongoSession.endSession();
+  }
 
-  return { order: updated, alreadyProcessed: false };
+  return { order: updated, alreadyProcessed };
 }
 
 async function sendPaymentConfirmationEmail(order) {

@@ -6,13 +6,30 @@ import { toast } from "@/components/toast/toast-store";
 
 import { SIZE_KEYS } from "./pricing-panel";
 
-const COLOR_STATUS_OPTIONS = [
-  { value: "draft", label: "Draft" },
-  { value: "active", label: "Active" },
-  { value: "archived", label: "Archived" },
+const MEDIA_SLOT_KEYS = ["front", "back", "modelFront", "modelBack", "closeup", "lifestyle"];
+
+// Brand palette pulled from the colors already used across the catalog, plus
+// a few common additions. Staff click a swatch instead of typing a hex code.
+const PRESET_COLORS = [
+  { name: "White", hex: "#FFFFFF" },
+  { name: "Off White", hex: "#F5F1EA" },
+  { name: "Beige", hex: "#E8DCC8" },
+  { name: "Black", hex: "#000000" },
+  { name: "Charcoal", hex: "#3A3A3A" },
+  { name: "Grey", hex: "#8C8C8C" },
+  { name: "Navy", hex: "#1F2A44" },
+  { name: "Olive", hex: "#5C9857" },
+  { name: "Maroon", hex: "#5E1F1F" },
+  { name: "Red", hex: "#B0212E" },
 ];
 
-const MEDIA_SLOT_KEYS = ["front", "back", "modelFront", "modelBack", "closeup", "lifestyle"];
+function slugify(value) {
+  return String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 async function uploadProductImage(file) {
   const formData = new FormData();
@@ -97,15 +114,17 @@ export function createEmptyColor(seed = {}) {
   };
 }
 
-function ColorCard({ color, onOpen }) {
+function ColorCard({ color, onOpen, isOpen }) {
   const label = color.name.trim() || "Untitled color";
 
   return (
     <button
       type="button"
       className="studio-color-card"
+      data-open={isOpen ? "true" : "false"}
       onClick={() => onOpen(color.id)}
       aria-label={`Edit color ${label}`}
+      aria-expanded={isOpen}
     >
       <span
         className="studio-color-card__swatch"
@@ -116,63 +135,62 @@ function ColorCard({ color, onOpen }) {
         <strong className="studio-color-card__name">{label}</strong>
         <span className="studio-color-card__meta">
           <span>{color.hex || "—"}</span>
-          <span data-status={color.status}>{color.status}</span>
+          {color.name.trim() ? null : <span>No name yet</span>}
         </span>
       </span>
-      <span className="studio-color-card__action">Edit</span>
+      <span className="studio-color-card__action">{isOpen ? "Close" : "Edit"}</span>
     </button>
   );
 }
 
-function VariantManager({ colors, onAdd, onOpen }) {
-  return (
-    <section
-      className="studio-section"
-      data-section="variants"
-      aria-labelledby="product-variants-title"
-    >
-      <header className="studio-section__header studio-variants__header">
-        <div>
-          <h2 id="product-variants-title" className="studio-section__title">
-            Variant Manager
-          </h2>
-          <p className="studio-section__copy">
-            Unlimited colors. Type a color name, pick a hex, then open the card
-            for media and stock.
-          </p>
-        </div>
-        <button
-          type="button"
-          className="studio-btn studio-btn--primary"
-          onClick={onAdd}
-        >
-          + Add Color
-        </button>
-      </header>
+function SwatchPicker({ hex, onChange }) {
+  const selectedName = PRESET_COLORS.find(
+    (entry) => entry.hex.toLowerCase() === String(hex || "").toLowerCase()
+  )?.name;
 
-      <div className="studio-variants__body">
-        {colors.length === 0 ? (
-          <div className="studio-variants__empty" role="status">
-            <p className="studio-variants__empty-title">No colors yet</p>
-            <p className="studio-variants__empty-copy">
-              Add a color to create the first variant card.
-            </p>
-          </div>
-        ) : (
-          <div className="studio-color-grid" role="list">
-            {colors.map((color) => (
-              <div key={color.id} role="listitem">
-                <ColorCard color={color} onOpen={onOpen} />
-              </div>
-            ))}
-          </div>
-        )}
+  return (
+    <div className="studio-swatch-picker">
+      <div className="studio-swatch-grid" role="listbox" aria-label="Brand colors">
+        {PRESET_COLORS.map((entry) => {
+          const active =
+            entry.hex.toLowerCase() === String(hex || "").toLowerCase();
+          return (
+            <button
+              key={entry.hex}
+              type="button"
+              className="studio-swatch"
+              role="option"
+              aria-selected={active}
+              title={entry.name}
+              onClick={() => onChange({ hex: entry.hex })}
+              style={{ background: entry.hex }}
+              aria-label={entry.name}
+            >
+              <span className="studio-swatch__name">{entry.name}</span>
+            </button>
+          );
+        })}
       </div>
-    </section>
+      <div className="studio-swatch-fallback">
+        <label className="studio-field__label">Or pick a custom color</label>
+        <div className="studio-field__inline">
+          <input
+            type="color"
+            name="colorHexPicker"
+            value={/^#[0-9A-Fa-f]{6}$/.test(hex || "") ? hex : "#000000"}
+            onChange={(event) => onChange({ hex: event.target.value })}
+            aria-label="Pick a custom color"
+          />
+          <span className="studio-swatch-fallback__name">
+            {selectedName ? `${selectedName} (${hex})` : `${hex || "#000000"}`}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 
-function ColorEditor({ color, onBack, onChange }) {
+function ColorEditor({ color, onBack, onChange, productName }) {
   const label = color.name.trim() || "Untitled color";
   const [uploading, setUploading] = useState(false);
 
@@ -180,6 +198,17 @@ function ColorEditor({ color, onBack, onChange }) {
 
   function patch(partial) {
     onChange({ ...color, ...partial });
+  }
+
+  // Auto SKU: BB-<PRODUCT-NAME>-<COLOR>-<SIZE>, e.g. BB-CHARCOAL-OVERSIZED-M.
+  const skuBase = useMemo(() => {
+    const product = slugify(productName).toUpperCase().replace(/-+$/, "");
+    const colorName = slugify(color.name).toUpperCase();
+    return `BB${product ? `-${product}` : ""}${colorName ? `-${colorName}` : ""}`;
+  }, [productName, color.name]);
+
+  function skuForSize(size) {
+    return `${skuBase}-${size}`;
   }
 
   async function handleUpload(event) {
@@ -217,13 +246,6 @@ function ColorEditor({ color, onBack, onChange }) {
   return (
     <div className="studio-color-editor" data-color-id={color.id}>
       <header className="studio-color-editor__top">
-        <button
-          type="button"
-          className="studio-btn studio-btn--ghost"
-          onClick={onBack}
-        >
-          Back to Variants
-        </button>
         <div className="studio-color-editor__heading">
           <span
             className="studio-color-card__swatch studio-color-card__swatch--lg"
@@ -231,10 +253,17 @@ function ColorEditor({ color, onBack, onChange }) {
             aria-hidden="true"
           />
           <div>
-            <p className="studio-main__eyebrow">Color Editor</p>
-            <h2 className="studio-section__title">{label}</h2>
+            <p className="studio-main__eyebrow">Color &amp; Stock</p>
+            <h3 className="studio-section__title">{label}</h3>
           </div>
         </div>
+        <button
+          type="button"
+          className="studio-btn studio-btn--ghost"
+          onClick={onBack}
+        >
+          Close
+        </button>
       </header>
 
       <section
@@ -243,11 +272,12 @@ function ColorEditor({ color, onBack, onChange }) {
         aria-labelledby="color-general-title"
       >
         <header className="studio-section__header">
-          <h3 id="color-general-title" className="studio-section__title">
-            General
-          </h3>
+          <h4 id="color-general-title" className="studio-section__title">
+            Color
+          </h4>
           <p className="studio-section__copy">
-            Admin types the color name and selects the hex color.
+            Click a preset color below. If you have a new shade, pick it with the
+            color box.
           </p>
         </header>
         <div className="studio-section__fields">
@@ -258,44 +288,13 @@ function ColorEditor({ color, onBack, onChange }) {
               name="colorName"
               value={color.name}
               onChange={(event) => patch({ name: event.target.value })}
-              placeholder="Black"
+              placeholder="e.g. Black"
               autoComplete="off"
             />
           </label>
-          <label className="studio-field">
-            <span className="studio-field__label">Hex Code</span>
-            <div className="studio-field__inline">
-              <input
-                type="color"
-                name="colorHexPicker"
-                value={/^#[0-9A-Fa-f]{6}$/.test(color.hex) ? color.hex : "#000000"}
-                onChange={(event) => patch({ hex: event.target.value })}
-                aria-label="Select hex color"
-              />
-              <input
-                type="text"
-                name="colorHex"
-                value={color.hex}
-                onChange={(event) => patch({ hex: event.target.value })}
-                placeholder="#000000"
-                spellCheck={false}
-                autoComplete="off"
-              />
-            </div>
-          </label>
-          <label className="studio-field">
-            <span className="studio-field__label">Status</span>
-            <select
-              name="colorStatus"
-              value={color.status}
-              onChange={(event) => patch({ status: event.target.value })}
-            >
-              {COLOR_STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+          <label className="studio-field studio-field--full">
+            <span className="studio-field__label">Color Swatch</span>
+            <SwatchPicker hex={color.hex} onChange={(partial) => patch(partial)} />
           </label>
         </div>
       </section>
@@ -306,9 +305,9 @@ function ColorEditor({ color, onBack, onChange }) {
         aria-labelledby="color-media-title"
       >
         <header className="studio-section__header">
-          <h3 id="color-media-title" className="studio-section__title">
+          <h4 id="color-media-title" className="studio-section__title">
             Product Images
-          </h3>
+          </h4>
           <p className="studio-section__copy">
             Upload multiple images for this color. The first image is used as
             the main product photo on the storefront.
@@ -351,11 +350,12 @@ function ColorEditor({ color, onBack, onChange }) {
         aria-labelledby="color-inventory-title"
       >
         <header className="studio-section__header">
-          <h3 id="color-inventory-title" className="studio-section__title">
+          <h4 id="color-inventory-title" className="studio-section__title">
             Stock &amp; Sizes
-          </h3>
+          </h4>
           <p className="studio-section__copy">
-            Every size stores stock, enabled state, and SKU.
+            Type how many pieces you have in each size. SKUs are filled in
+            automatically (e.g. {skuBase}-M).
           </p>
         </header>
         <div className="studio-inventory">
@@ -407,11 +407,11 @@ function ColorEditor({ color, onBack, onChange }) {
                     <input
                       type="text"
                       name={`sku-${size}`}
-                      value={row.sku}
+                      value={row.sku || skuForSize(size)}
                       onChange={(event) =>
                         patchSize(size, "sku", event.target.value)
                       }
-                      placeholder="SKU"
+                      placeholder={skuForSize(size)}
                       spellCheck={false}
                       autoComplete="off"
                     />
@@ -438,8 +438,8 @@ function ColorEditor({ color, onBack, onChange }) {
 }
 
 /**
- * Variants tab — unlimited colors, media, stock & sizes.
- * Local UI state only; no CRUD or API.
+ * Colors & Sizes — all colors on one page. The selected color expands inline
+ * so staff never leave the main form. Local UI state only; no CRUD or API.
  */
 export default function VariantsPanel({
   colors,
@@ -447,24 +447,69 @@ export default function VariantsPanel({
   onAddColor,
   onSelectColor,
   onUpdateColor,
+  productName,
 }) {
-  const selected = colors.find((color) => color.id === selectedColorId);
-
-  if (selected) {
-    return (
-      <ColorEditor
-        color={selected}
-        onBack={() => onSelectColor(null)}
-        onChange={onUpdateColor}
-      />
-    );
-  }
-
   return (
-    <VariantManager
-      colors={colors}
-      onAdd={onAddColor}
-      onOpen={onSelectColor}
-    />
+    <section
+      className="studio-section"
+      data-section="variants"
+      id="editor-panel-variants"
+      aria-labelledby="product-variants-title"
+    >
+      <header className="studio-section__header studio-variants__header">
+        <div>
+          <h2 id="product-variants-title" className="studio-section__title">
+            Colors &amp; Sizes
+          </h2>
+          <p className="studio-section__copy">
+            Add the colors this product comes in, then set stock and photos for
+            each one. Click a color to open its details below.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="studio-btn studio-btn--primary"
+          onClick={onAddColor}
+        >
+          + Add Color
+        </button>
+      </header>
+
+      <div className="studio-variants__body">
+        {colors.length === 0 ? (
+          <div className="studio-variants__empty" role="status">
+            <p className="studio-variants__empty-title">No colors yet</p>
+            <p className="studio-variants__empty-copy">
+              Add a color to create the first variant card.
+            </p>
+          </div>
+        ) : (
+          <div className="studio-color-grid" role="list">
+            {colors.map((color) => (
+              <div
+                className="studio-color-card-wrap"
+                role="listitem"
+                data-open={selectedColorId === color.id ? "true" : "false"}
+                key={color.id}
+              >
+                <ColorCard
+                  color={color}
+                  onOpen={onSelectColor}
+                  isOpen={selectedColorId === color.id}
+                />
+                {selectedColorId === color.id ? (
+                  <ColorEditor
+                    color={color}
+                    onBack={() => onSelectColor(null)}
+                    onChange={onUpdateColor}
+                    productName={productName}
+                  />
+                ) : null}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

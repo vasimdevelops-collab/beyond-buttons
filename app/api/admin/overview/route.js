@@ -6,6 +6,10 @@ import { bootstrapDatabase, MediaModel, CustomerModel, OrderModel, ProductModel 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const THIRTY_DAYS_AGO = new Date(Date.now() - 30 * DAY_MS);
 
+// A "confirmed sale" for revenue purposes: online orders confirmed by the
+// Razorpay webhook (paid), or COD orders (payment collected on delivery).
+const SALE_MATCH = { $or: [{ paymentStatus: "paid" }, { paymentMethod: "cod" }] };
+
 function buildDailySeries(dailyRows, days = 30) {
   const byDate = new Map();
   for (const row of dailyRows) {
@@ -43,7 +47,7 @@ export async function GET(request) {
         CustomerModel.countDocuments(),
         OrderModel.countDocuments(),
         OrderModel.aggregate([
-          { $match: { paymentStatus: "paid" } },
+          { $match: SALE_MATCH },
           { $group: { _id: null, total: { $sum: "$total" } } },
         ]).then((rows) => rows[0]?.total || 0),
         MediaModel.countDocuments(),
@@ -55,7 +59,7 @@ export async function GET(request) {
         OrderModel.aggregate([
           {
             $match: {
-              paymentStatus: "paid",
+              ...SALE_MATCH,
               createdAt: { $gte: THIRTY_DAYS_AGO },
             },
           },
@@ -79,7 +83,7 @@ export async function GET(request) {
           .lean()
           .exec(),
         OrderModel.aggregate([
-          { $match: { paymentStatus: "paid" } },
+          { $match: SALE_MATCH },
           {
             $group: {
               _id: "$paymentMethod",

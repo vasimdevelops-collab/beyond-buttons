@@ -42,12 +42,39 @@ function normalizeAddress(raw = {}) {
   };
 }
 
+function resolveVariant(product) {
+  if (Array.isArray(product.variants) && product.variants.length) return product.variants[0];
+  return null;
+}
+
+function resolveColor(product, variant) {
+  if (Array.isArray(variant?.colors) && variant.colors.length) {
+    return variant.colors.find((entry) => entry.isDefault) || variant.colors[0];
+  }
+  if (Array.isArray(product.colors) && product.colors.length) {
+    return product.colors.find((entry) => entry.isDefault || entry.default) || product.colors[0];
+  }
+  return null;
+}
+
+function resolveColorId(product, color) {
+  return (
+    color?.id ||
+    `color-${product.id}-${color?.color?.slug || color?.name || "default"}`
+      .replace(/\s+/g, "-")
+      .toLowerCase()
+  );
+}
+
+function resolveSizeEntry(color, size) {
+  const sizes = Array.isArray(color?.sizes) ? color.sizes : [];
+  return sizes.find((entry) => entry.size === size || entry.label === size) || null;
+}
+
 function makeOrderItemSnapshot(product, item) {
-  const variant = Array.isArray(product.variants) ? product.variants[0] : null;
-  const color = Array.isArray(variant?.colors) ? variant.colors.find((entry) => entry.isDefault) || variant.colors[0] : null;
-  const sizeEntry = Array.isArray(color?.sizes)
-    ? color.sizes.find((entry) => entry.size === item.size) || color.sizes[0]
-    : null;
+  const variant = resolveVariant(product);
+  const color = resolveColor(product, variant);
+  const sizeEntry = resolveSizeEntry(color, item.size) || null;
 
   const image = item.image || color?.media?.front?.src || "";
   const qty = Math.max(1, Number(item.quantity) || 1);
@@ -73,9 +100,9 @@ function makeOrderItemSnapshot(product, item) {
     },
     color: {
       id: color?.id || "",
-      name: color?.color?.name || item.color || "Default",
-      slug: color?.color?.slug || toSlug(color?.color?.name || item.color || "default"),
-      hex: color?.color?.hex || "",
+      name: color?.color?.name || color?.name || item.color || "Default",
+      slug: color?.color?.slug || toSlug(color?.color?.name || color?.name || item.color || "default"),
+      hex: color?.color?.hex || color?.hex || "",
     },
     size: item.size || sizeEntry?.size || "",
     sku: sizeEntry?.sku || `${product.slug}-${item.size || "std"}`,
@@ -104,16 +131,27 @@ export async function GET(request) {
       .exec();
 
     return NextResponse.json({
-      orders: orders.map((order) => ({
-        id: order.id,
-        orderNumber: order.orderNumber,
-        total: Number(order.total || 0),
-        paymentStatus: order.paymentStatus,
-        paymentMethod: order.paymentMethod || "cod",
-        shippingStatus: order.shippingStatus,
-        createdAt: order.createdAt,
-        itemCount: Array.isArray(order.items) ? order.items.length : 0,
-      })),
+      orders: orders.map((order) => {
+        const items = Array.isArray(order.items) ? order.items : [];
+        const productNames = items.map((item) => item.product?.name).filter(Boolean);
+        const firstProduct = productNames[0] || "Unknown Product";
+        const displayName = productNames.length > 1
+          ? `${firstProduct} +${productNames.length - 1} more`
+          : firstProduct;
+
+        return {
+          id: order.id,
+          orderNumber: order.orderNumber,
+          total: Number(order.total || 0),
+          paymentStatus: order.paymentStatus,
+          paymentMethod: order.paymentMethod || "cod",
+          shippingStatus: order.shippingStatus,
+          createdAt: order.createdAt,
+          itemCount: items.length,
+          productName: displayName,
+          productNames,
+        };
+      }),
     });
   } catch (error) {
     console.error("[orders] Failed to load customer orders:", error);
@@ -241,7 +279,6 @@ export async function POST(request) {
     });
 
     const snapshots = [];
-    // Track requested quantities per product+size for the inventory decrement.
     const stockDecrements = [];
     let subtotal = 0;
 
@@ -261,13 +298,9 @@ export async function POST(request) {
         );
       }
 
-      const variant = Array.isArray(product.variants) ? product.variants[0] : null;
-      const color = Array.isArray(variant?.colors)
-        ? variant.colors.find((entry) => entry.isDefault) || variant.colors[0]
-        : null;
-      const sizeEntry = Array.isArray(color?.sizes)
-        ? color.sizes.find((entry) => entry.size === item.size)
-        : null;
+      const variant = resolveVariant(product);
+      const color = resolveColor(product, variant);
+      const sizeEntry = resolveSizeEntry(color, item.size);
 
       if (!sizeEntry) {
         return NextResponse.json(
@@ -282,7 +315,9 @@ export async function POST(request) {
         const stock = Number(sizeEntry.stock);
         if (stock === 0) {
           return NextResponse.json(
-            { error: `"${product.generalInformation?.name || product.slug}" in size ${item.size} is out of stock.` },
+            {
+              error: `Sorry, ${product.generalInformation?.name || product.slug} in size ${item.size} just sold out. Please choose another size or remove it from your cart.`,
+            },
             { status: 409 }
           );
         }
@@ -298,14 +333,13 @@ export async function POST(request) {
       subtotal += snapshot.lineTotal;
       snapshots.push(snapshot);
 
-      if (color) {
-        stockDecrements.push({
-          productId: product.id,
-          colorId: color.id,
-          size: item.size,
-          qty: requestedQty,
-        });
-      }
+      stockDecrements.push({
+        productId: product.id,
+        colorId: resolveColorId(product, color),
+        size: sizeEntry.size,
+        qty: requestedQty,
+      });
+
     }
 
     // ── 3. Server-side totals (never trust client-submitted values) ────────
@@ -355,6 +389,10 @@ export async function POST(request) {
           actor: authSession.user.email,
         },
       ],
+      // COD is reserved in the transaction below. Online orders are reserved
+      // only by the verified Razorpay webhook after payment capture.
+      stockDecremented: paymentMethodId === "cod",
+      stockRestored: false,
     };
 
     // ── 5. Transactional write: decrement stock, increment coupon usage, create order ──
@@ -364,14 +402,25 @@ export async function POST(request) {
     try {
       await mongoSession.withTransaction(async () => {
         // Decrement inventory for each item.
-        // Atomic check: only decrement if stock >= requested quantity (prevents oversell race condition).
-        for (const decrement of stockDecrements) {
+        // Atomic check: only decrement if the exact size entry has enough stock.
+        // NOTE: positional identifiers ($[v]/$[c]/$[s]) must NOT be used in the
+        // find condition — MongoDB treats them as literal paths there and the
+        // query silently matches nothing. $elemMatch guarantees the SAME size
+        // entry satisfies both the size and the stock guard.
+        if (paymentMethodId === "cod") for (const decrement of stockDecrements) {
           const result = await ProductModel.findOneAndUpdate(
             {
               id: decrement.productId,
-              "variants.colors.id": decrement.colorId,
-              "variants.colors.sizes.size": decrement.size,
-              "variants.$[v].colors.$[c].sizes.$[s].stock": { $gte: decrement.qty },
+              variants: {
+                $elemMatch: {
+                  colors: {
+                    $elemMatch: {
+                      id: decrement.colorId,
+                      sizes: { $elemMatch: { size: decrement.size, stock: { $gte: decrement.qty } } },
+                    },
+                  },
+                },
+              },
             },
             {
               $inc: {
@@ -382,6 +431,7 @@ export async function POST(request) {
               arrayFilters: [
                 { "v.colors.id": decrement.colorId },
                 { "c.sizes.size": decrement.size },
+                { "s.size": decrement.size },
               ],
               session: mongoSession,
             }
@@ -394,7 +444,15 @@ export async function POST(request) {
             const color = variant?.colors?.find((c) => c.id === decrement.colorId);
             const sizeEntry = color?.sizes?.find((s) => s.size === decrement.size);
             const available = sizeEntry?.stock ?? 0;
-            throw new Error(`Insufficient stock for ${decrement.size} (available: ${available}, requested: ${decrement.qty})`);
+            const snapshot = snapshots.find(
+              (item) => item.product?.id === decrement.productId && item.size === decrement.size
+            );
+            const error = new Error(
+              `Sorry, ${snapshot?.product?.name || "this product"} in size ${decrement.size} just sold out. Please choose another size or remove it from your cart.`
+            );
+            error.name = "StockUnavailableError";
+            error.available = available;
+            throw error;
           }
         }
 
@@ -441,6 +499,9 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error("[orders] Failed to create order:", error);
+    if (error?.name === "StockUnavailableError") {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
     return NextResponse.json(
       { error: error?.message || "Unable to place order." },
       { status: 500 }

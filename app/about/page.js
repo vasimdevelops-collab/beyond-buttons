@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import Link from "next/link";
+import RevealOnScroll from "@/components/common/RevealOnScroll";
 
 import Navbar from "@/components/layout/Navbar";
 import "@/components/about/about.css";
@@ -80,115 +81,133 @@ export default function AboutPage() {
 
       <main className="bb-about">
         {/* ── Hero — full-bleed, borderless ─────────────────────────── */}
-        <section className="bb-about__hero">
-          <div className="bb-about__inner">
-            <p className="bb-about__eyebrow">Our story</p>
-            <h1>Beyond buttons, into a sharper everyday uniform.</h1>
-            <p className="bb-about__hero-intro">
-              The whole story — where we came from, how we make things, and what
-              we&apos;re building.
-            </p>
+        <RevealOnScroll className="bb-about__hero-wrapper">
+          <section className="bb-about__hero">
+            <div className="bb-about__inner">
+              <p className="bb-about__eyebrow">Our story</p>
+              <h1>Beyond buttons, into a sharper everyday uniform.</h1>
+              <p className="bb-about__hero-intro">
+                The whole story — where we came from, how we make things, and what
+                we&apos;re building.
+              </p>
 
-            <nav className="bb-about__stats" aria-label="Jump to sections">
-              <a className="bb-about__stat" href="#foundation">
-                <b>01</b>
-                <small>The first shirt</small>
-              </a>
-              <a className="bb-about__stat" href="#craft">
-                <b>03</b>
-                <small>Craft principles</small>
-              </a>
-              <a className="bb-about__stat" href="#vision">
-                <b>∞</b>
-                <small>Style goal</small>
-              </a>
-            </nav>
-          </div>
-        </section>
+              <nav className="bb-about__stats" aria-label="Jump to sections">
+                <a className="bb-about__stat" href="#foundation">
+                  <b>01</b>
+                  <small>The first shirt</small>
+                </a>
+                <a className="bb-about__stat" href="#craft">
+                  <b>03</b>
+                  <small>Craft principles</small>
+                </a>
+                <a className="bb-about__stat" href="#vision">
+                  <b>∞</b>
+                  <small>Style goal</small>
+                </a>
+              </nav>
+            </div>
+          </section>
+        </RevealOnScroll>
 
         {/* ── Image break #1 — full-bleed editorial ─────────────────── */}
-        <Figure
-          src="/images/homeback.jpeg"
-          alt="Beyond Buttons editorial"
-          caption="The studio"
-          className="bb-about__figure--wide"
-        />
+        <RevealOnScroll delay={100} className="bb-about__figure-wrapper">
+          <Figure
+            src="/images/homeback.jpeg"
+            alt="Beyond Buttons editorial"
+            caption="The studio"
+            className="bb-about__figure--wide"
+          />
+        </RevealOnScroll>
 
         {/* ── The founding story — borderless narrative ─────────────── */}
-        <section id="foundation" className="bb-about__foundation">
-          <div className="bb-about__inner">
-            <p className="bb-about__section-tag">How it began</p>
-            <h2 className="bb-about__section-title">The first shirt</h2>
-            <div className="bb-about__story">
-              {STORY.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
-              <p className="bb-about__pull">{PULL_QUOTE}</p>
+        <RevealOnScroll delay={150} className="bb-about__foundation-wrapper">
+          <section id="foundation" className="bb-about__foundation">
+            <div className="bb-about__inner">
+              <p className="bb-about__section-tag">How it began</p>
+              <h2 className="bb-about__section-title">The first shirt</h2>
+              <div className="bb-about__story">
+                {STORY.map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))}
+                <p className="bb-about__pull">{PULL_QUOTE}</p>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </RevealOnScroll>
 
         {/* ── Craft — one values grid ────────────────────────────────── */}
-        <section id="craft" className="bb-about__craft">
-          <div className="bb-about__inner">
-            <p className="bb-about__section-tag">The craft</p>
-            <h2 className="bb-about__section-title">Cut clean, made properly</h2>
-            <p className="bb-about__craft-intro">
-              Every piece starts with the fabric and ends with the finish.
-              Nothing is left to chance, and nothing is added that doesn&apos;t
-              earn its place.
-            </p>
+        <RevealOnScroll delay={150} className="bb-about__craft-wrapper">
+          <section id="craft" className="bb-about__craft">
+            <div className="bb-about__inner">
+              <p className="bb-about__section-tag">The craft</p>
+              <h2 className="bb-about__section-title">Cut clean, made properly</h2>
+              <p className="bb-about__craft-intro">
+                Every piece starts with the fabric and ends with the finish.
+                Nothing is left to chance, and nothing is added that doesn&apos;t
+                earn its place.
+              </p>
 
-            <div className="bb-about__values">
-              {VALUES.map((value) => (
-                <article className="bb-about__value" key={value.index}>
-                  <b>{value.index}</b>
-                  <h3>{value.title}</h3>
-                  <p>{value.copy}</p>
-                </article>
-              ))}
+              <div className="bb-about__values">
+                {VALUES.map((value, index) => (
+                  <RevealOnScroll key={value.index} delay={200 + index * 100} className="bb-about__value-wrapper">
+                    <article className="bb-about__value">
+                      <b>{value.index}</b>
+                      <h3>{value.title}</h3>
+                      <p>{value.copy}</p>
+                    </article>
+                  </RevealOnScroll>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </RevealOnScroll>
 
         {/* ── Vision & Mission — alternating tone band ──────────────── */}
-        <section id="vision" className="bb-about__vision">
-          <div className="bb-about__inner">
-            <p className="bb-about__section-tag">Where we&apos;re going</p>
-            <h2 className="bb-about__section-title">Vision &amp; Mission</h2>
-            <div className="bb-about__vision-grid">
-              <div className="bb-about__vision-col">
-                <p className="bb-about__card-eyebrow">{VISION.eyebrow}</p>
-                <h3>{VISION.title}</h3>
-                <p>{VISION.copy}</p>
-              </div>
-              <div className="bb-about__vision-col">
-                <p className="bb-about__card-eyebrow">{MISSION.eyebrow}</p>
-                <h3>{MISSION.title}</h3>
-                <p>{MISSION.copy}</p>
+        <RevealOnScroll delay={150} className="bb-about__vision-wrapper">
+          <section id="vision" className="bb-about__vision">
+            <div className="bb-about__inner">
+              <p className="bb-about__section-tag">Where we&apos;re going</p>
+              <h2 className="bb-about__section-title">Vision & Mission</h2>
+              <div className="bb-about__vision-grid">
+                <RevealOnScroll delay={100} className="bb-about__vision-col-wrapper">
+                  <div className="bb-about__vision-col">
+                    <p className="bb-about__card-eyebrow">{VISION.eyebrow}</p>
+                    <h3>{VISION.title}</h3>
+                    <p>{VISION.copy}</p>
+                  </div>
+                </RevealOnScroll>
+                <RevealOnScroll delay={200} className="bb-about__vision-col-wrapper">
+                  <div className="bb-about__vision-col">
+                    <p className="bb-about__card-eyebrow">{MISSION.eyebrow}</p>
+                    <h3>{MISSION.title}</h3>
+                    <p>{MISSION.copy}</p>
+                  </div>
+                </RevealOnScroll>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </RevealOnScroll>
 
         {/* ── Closing CTA ───────────────────────────────────────────── */}
-        <section className="bb-about__closing">
-          <div className="bb-about__inner">
-            <h2 className="bb-about__section-title">Fewer, better.</h2>
-            <p className="bb-about__closing-copy">
-              Three principles. One shirt. Explore the edit and see what a
-              considered wardrobe feels like.
-            </p>
-            <div className="bb-about__cta-row">
-              <Link href="/shop" className="about-page__cta about-page__cta--primary">
-                Shop the edit
-              </Link>
-              <Link href="/contact" className="about-page__cta">
-                Contact us
-              </Link>
+        <RevealOnScroll delay={150} className="bb-about__closing-wrapper">
+          <section className="bb-about__closing">
+            <div className="bb-about__inner">
+              <h2 className="bb-about__section-title">Fewer, better.</h2>
+              <p className="bb-about__closing-copy">
+                Three principles. One shirt. Explore the edit and see what a
+                considered wardrobe feels like.
+              </p>
+              <div className="bb-about__cta-row">
+                <Link href="/shop" className="about-page__cta about-page__cta--primary">
+                  Shop the edit
+                </Link>
+                <Link href="/contact" className="about-page__cta">
+                  Contact us
+                </Link>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </RevealOnScroll>
       </main>
     </>
   );

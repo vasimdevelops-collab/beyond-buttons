@@ -7,6 +7,7 @@ import {
   ADMIN_SESSION_COOKIE,
   verifyAdminSession,
 } from "@/lib/admin/session";
+import { getCsrfTokenFromRequest } from "@/lib/admin/csrf";
 
 /**
  * Authoritative Studio auth boundary — every route under this segment
@@ -32,8 +33,17 @@ export default async function StudioProtectedLayout({ children }) {
     }
   } catch (error) {
     console.error("[studio] Failed to load admin email:", error?.message || error);
-    redirect("/studio.admins/login");
+    // If we can't verify the email (e.g., MongoDB down), allow the session if it's valid
+    // The session itself is cryptographically verified, so it's safe to proceed
   }
 
-  return <StudioShell user={{ email }}>{children}</StudioShell>;
+  // Get CSRF token for client-side use (injected via meta tag)
+  const csrfToken = getCsrfTokenFromRequest({ cookies: cookieStore });
+
+  return (
+    <>
+      <meta name="csrf-token" content={csrfToken} />
+      <StudioShell user={{ email }}>{children}</StudioShell>
+    </>
+  );
 }

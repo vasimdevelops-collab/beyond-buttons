@@ -1,0 +1,151 @@
+/* ============================================================
+   HERO FILMSTRIP — continuously auto-scrolling horizontal row
+   Multiple images visible side by side; the row drifts left at
+   a slow, constant speed and loops seamlessly (no jump, no stop).
+   ============================================================ */
+
+.hero-filmstrip {
+  position: relative;
+  height: 100svh;
+  min-height: 560px;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--color-bg);
+}
+
+.hero-filmstrip--loading {
+  height: 100svh;
+  min-height: 560px;
+  background: var(--color-bg);
+}
+
+.hero-filmstrip__track {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  width: max-content;
+  animation: heroFilmstripScroll var(--loop-duration) linear infinite;
+  will-change: transform;
+}
+
+/* Fixed height tiles, natural width — a real filmstrip of differently
+   sized shots, all lined up cleanly along a single baseline. */
+.hero-filmstrip__tile {
+  position: relative;
+  height: 100%;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.hero-filmstrip__image {
+  display: block;
+  height: 100%;
+  width: auto;
+  object-fit: cover;
+}
+
+/* Soft vertical vignette so the row fades into the page instead of
+   hard-edging at the very top/bottom of the viewport. */
+.hero-filmstrip__shade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+      to bottom,
+      rgba(8, 8, 8, 0.28) 0%,
+      rgba(8, 8, 8, 0) 28%
+    ),
+    linear-gradient(to top, rgba(8, 8, 8, 0.42) 0%, rgba(8, 8, 8, 0) 30%);
+}
+
+@keyframes heroFilmstripScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 1023px) {
+  .hero-filmstrip,
+  .hero-filmstrip--loading {
+    height: 92svh;
+    min-height: 520px;
+  }
+}
+
+/* Mobile — 1-by-1 carousel at desktop-like hero height. The desktop
+   marquee track is not rendered (HeroFilmstrip.jsx swaps markup), these
+   rules style the full-viewport sliding tiles + dot navigation. */
+@media (max-width: 767px) {
+  .hero-filmstrip,
+  .hero-filmstrip--loading {
+    height: 100svh;
+    min-height: 520px;
+  }
+
+  .hero-filmstrip--mobile .hero-filmstrip__mobile-track {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    transition: transform 900ms var(--ease-luxury);
+    will-change: transform;
+  }
+
+  .hero-filmstrip--mobile .hero-filmstrip__mobile-tile {
+    position: relative;
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+  }
+
+  .hero-filmstrip--mobile .hero-filmstrip__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-filmstrip__dots {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    bottom: 22px;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .hero-filmstrip__dots button {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border: 1px solid rgba(250, 248, 244, 0.7);
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 280ms ease, width 280ms ease,
+      border-color 280ms ease;
+  }
+
+  .hero-filmstrip__dots button.is-active {
+    width: 26px;
+    background: var(--goldLight);
+    border-color: var(--goldLight);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-filmstrip__track {
+    animation: none;
+  }
+
+  .hero-filmstrip--mobile .hero-filmstrip__mobile-track {
+    transition: none;
+  }
+}

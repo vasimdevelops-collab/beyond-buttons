@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/session";
 import { bootstrapDatabase } from "@/lib/database/register";
 import { OrderModel } from "@/lib/database/models";
+import { restoreOrderStockOnce } from "@/lib/shop/stock";
 import { checkCsrf } from "@/lib/admin/csrf";
 
 const VALID_PAYMENT_STATUSES = new Set(["pending", "paid", "failed", "refunded"]);
@@ -125,6 +126,15 @@ export async function PATCH(request, { params }) {
         timestamp: new Date().toISOString(),
         actor: adminEmail,
       });
+    }
+
+    if (
+      updates.shippingStatus === "cancelled" &&
+      order.stockDecremented &&
+      !order.stockRestored
+    ) {
+      const restored = await restoreOrderStockOnce(orderId, adminEmail);
+      if (restored) order.stockRestored = true;
     }
 
     Object.assign(order, updates);

@@ -444,6 +444,38 @@ function ForgotPasswordView() {
   );
 }
 
+function formatMoney(amount, currency = "INR") {
+  if (amount == null || Number.isNaN(Number(amount))) return "—";
+  try {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(Number(amount));
+  } catch {
+    return `₹${Number(amount).toLocaleString("en-IN")}`;
+  }
+}
+
+function getStatusLabel(status, type) {
+  const labels = {
+    payment: {
+      pending: "Payment: Pending",
+      paid: "Payment: Paid",
+      failed: "Payment: Failed",
+      refunded: "Payment: Refunded",
+    },
+    shipping: {
+      pending: "Order: Pending",
+      processing: "Order: Processing",
+      shipped: "Order: Shipped",
+      delivered: "Order: Delivered",
+      cancelled: "Order: Cancelled",
+    },
+  };
+  return labels[type]?.[status] || `${type}: ${status}`;
+}
+
 function AccountView() {
   const router = useRouter();
   const rootRef = useAuthReveal("account");
@@ -550,18 +582,34 @@ function AccountView() {
               <ul className="customer-auth__order-list">
                 {orders.map((order) => (
                   <li key={order.id} className="customer-auth__order-item">
-                    <div>
-                      <strong>{order.orderNumber}</strong>
-                      <small>{new Date(order.createdAt).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}</small>
-                    </div>
-                    <span>{order.itemCount} item(s)</span>
-                    <span>{order.paymentStatus}</span>
-                    <span>{order.shippingStatus}</span>
-                    <strong>₹{Number(order.total || 0).toLocaleString("en-IN")}</strong>
+                    <article className="customer-auth__order-card">
+                      <div className="customer-auth__order-main">
+                        <header className="customer-auth__order-header">
+                          <h3 className="customer-auth__order-product">{order.productName}</h3>
+                          <div className="customer-auth__order-meta">
+                            <span className="customer-auth__order-number">{order.orderNumber}</span>
+                            <time className="customer-auth__order-date">
+                              {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              })}
+                            </time>
+                          </div>
+                        </header>
+                        <div className="customer-auth__order-statuses">
+                          <span className={`customer-auth__status-badge customer-auth__status-badge--payment ${order.paymentStatus}`}>
+                            {getStatusLabel(order.paymentStatus, "payment")}
+                          </span>
+                          <span className={`customer-auth__status-badge customer-auth__status-badge--shipping ${order.shippingStatus}`}>
+                            {getStatusLabel(order.shippingStatus, "shipping")}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="customer-auth__order-total">
+                        {formatMoney(order.total, order.currency || "INR")}
+                      </div>
+                    </article>
                   </li>
                 ))}
               </ul>

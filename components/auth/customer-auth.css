@@ -316,27 +316,159 @@
 }
 
 .customer-auth__order-item {
+  padding: 0;
+}
+
+.customer-auth__order-card {
   display: grid;
-  grid-template-columns: 1.4fr 0.9fr 0.9fr 0.9fr 0.8fr;
-  gap: 10px;
-  align-items: center;
-  padding: 14px 16px;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: start;
+  padding: 20px;
   border: 1px solid var(--hairline);
-  border-radius: 14px;
-  background: var(--surface-glass, transparent);
-  color: var(--offWhite, var(--color-text));
-  font: 400 13px/1.4 var(--font-body);
+  border-radius: 16px;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.customer-auth__order-item strong,
-.customer-auth__order-item small,
-.customer-auth__order-item span {
-  display: block;
+.customer-auth__order-card:hover {
+  border-color: var(--hairline-gold-strong);
+  box-shadow: 0 12px 32px rgba(14, 12, 8, 0.18);
 }
 
-.customer-auth__order-item small {
+.customer-auth__order-main {
+  min-width: 0;
+}
+
+.customer-auth__order-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.customer-auth__order-product {
+  margin: 0;
+  color: var(--offWhite);
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.customer-auth__order-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.customer-auth__order-number {
   color: var(--text-muted);
-  margin-top: 4px;
+  font: 500 10px/1.2 var(--font-body);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.customer-auth__order-date {
+  color: var(--text-muted);
+  font: 400 12px/1.4 var(--font-body);
+}
+
+.customer-auth__order-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.customer-auth__status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font: 500 9.5px/1 var(--font-body);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.customer-auth__status-badge--payment {
+  background: var(--surface-panel);
+  border: 1px solid var(--hairline);
+}
+
+.customer-auth__status-badge--shipping {
+  background: var(--surface-panel);
+  border: 1px solid var(--hairline);
+}
+
+/* Payment status colors */
+.customer-auth__status-badge--payment.pending {
+  color: var(--goldLight);
+  background: rgba(176, 141, 87, 0.1);
+  border-color: rgba(176, 141, 87, 0.3);
+}
+
+.customer-auth__status-badge--payment.paid {
+  color: #2e7d32;
+  background: rgba(46, 125, 50, 0.1);
+  border-color: rgba(46, 125, 50, 0.3);
+}
+
+.customer-auth__status-badge--payment.failed {
+  color: #c62828;
+  background: rgba(198, 40, 40, 0.1);
+  border-color: rgba(198, 40, 40, 0.3);
+}
+
+.customer-auth__status-badge--payment.refunded {
+  color: #1565c0;
+  background: rgba(21, 101, 192, 0.1);
+  border-color: rgba(21, 101, 192, 0.3);
+}
+
+/* Shipping status colors */
+.customer-auth__status-badge--shipping.pending {
+  color: var(--goldLight);
+  background: rgba(176, 141, 87, 0.1);
+  border-color: rgba(176, 141, 87, 0.3);
+}
+
+.customer-auth__status-badge--shipping.processing {
+  color: #1565c0;
+  background: rgba(21, 101, 192, 0.1);
+  border-color: rgba(21, 101, 192, 0.3);
+}
+
+.customer-auth__status-badge--shipping.shipped {
+  color: #6a1b9a;
+  background: rgba(106, 27, 154, 0.1);
+  border-color: rgba(106, 27, 154, 0.3);
+}
+
+.customer-auth__status-badge--shipping.delivered {
+  color: #2e7d32;
+  background: rgba(46, 125, 50, 0.1);
+  border-color: rgba(46, 125, 50, 0.3);
+}
+
+.customer-auth__status-badge--shipping.cancelled {
+  color: #c62828;
+  background: rgba(198, 40, 40, 0.1);
+  border-color: rgba(198, 40, 40, 0.3);
+}
+
+.customer-auth__order-total {
+  display: flex;
+  align-items: start;
+  justify-content: flex-end;
+  min-width: 120px;
+  color: var(--offWhite);
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .customer-auth__account-actions {
@@ -350,6 +482,21 @@
   .customer-auth__main {
     width: min(100% - 32px, 480px);
     padding-top: 108px;
+  }
+
+  .customer-auth__main--account {
+    width: min(100% - 28px, 640px);
+  }
+
+  .customer-auth__order-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 18px 16px;
+  }
+
+  .customer-auth__order-total {
+    justify-content: flex-start;
+    min-width: auto;
   }
 
   .customer-auth__account-actions {

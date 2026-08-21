@@ -1,12 +1,14 @@
-﻿"use client";
+"use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import gsap from "gsap";
 
 import Navbar from "@/components/layout/Navbar";
 import { CartProvider, useCart } from "@/lib/shop/commerce";
+import { getProductBySlug } from "@/lib/data";
 import "./shopping.css";
 
 function useShopReveal(dependencyKey = "") {
@@ -67,7 +69,7 @@ function OrderSummary({ primaryHref, primaryLabel, primaryDisabled, onPrimary, s
       <h2 className="shop-section__title">Order Summary</h2>
       <div className="shop-summary__row">
         <span>Subtotal</span>
-        <span>{totals.pricesPending && totals.subtotal === 0 ? "â€”" : formatMoney(totals.subtotal)}</span>
+        <span>{totals.pricesPending && totals.subtotal === 0 ? "—" : formatMoney(totals.subtotal)}</span>
       </div>
       <div className="shop-summary__row">
         <span>Shipping</span>
@@ -81,7 +83,7 @@ function OrderSummary({ primaryHref, primaryLabel, primaryDisabled, onPrimary, s
       ) : null}
       <div className="shop-summary__row shop-summary__row--total">
         <span>Total</span>
-        <span>{totals.pricesPending && totals.total === 0 ? "â€”" : formatMoney(totals.total)}</span>
+        <span>{totals.pricesPending && totals.total === 0 ? "—" : formatMoney(totals.total)}</span>
       </div>
       {totals.pricesPending ? (
         <p className="shop-note">Pricing syncs from catalog when available.</p>
@@ -120,19 +122,44 @@ function OrderSummary({ primaryHref, primaryLabel, primaryDisabled, onPrimary, s
 
 function CartLine({ line }) {
   const { updateQuantity, removeItem, formatMoney } = useCart();
+  const catalog = getProductBySlug(line.slug || line.productId);
+  const comparePrice = catalog?.comparePrice || line.comparePrice;
 
   return (
     <article className="shop-line" data-shop-reveal>
-      <div className="shop-line__media">
+      <Link
+        href={`/product/${line.slug || line.productId}`}
+        className="shop-line__media"
+        tabIndex={-1}
+        aria-label={line.name}
+      >
         {line.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={line.image} alt="" />
+          <img src={line.image} alt={line.name} />
         ) : null}
-      </div>
-      <div>
-        <h2 className="shop-line__name">{line.name}</h2>
-        {line.color ? <p className="shop-line__meta">Color Â· {line.color}</p> : null}
-        {line.size ? <p className="shop-line__meta">Size Â· {line.size}</p> : null}
+      </Link>
+
+      <div className="shop-line__main">
+        <div className="shop-line__top">
+          <div className="shop-line__titles">
+            <h2 className="shop-line__name">
+              <Link href={`/product/${line.slug || line.productId}`}>{line.name}</Link>
+            </h2>
+            <p className="shop-line__meta">
+              {[
+                line.color ? `Color · ${line.color}` : "",
+                line.size ? `Size · ${line.size}` : "",
+              ]
+                .filter(Boolean)
+                .join("  ")}
+            </p>
+          </div>
+          <p className="shop-line__price">
+            {formatMoney(line.unitPrice)}
+            {comparePrice ? <del>{formatMoney(comparePrice)}</del> : null}
+          </p>
+        </div>
+
         <div className="shop-line__controls">
           <div className="shop-qty" aria-label={`Quantity for ${line.name}`}>
             <button
@@ -140,7 +167,7 @@ function CartLine({ line }) {
               aria-label="Decrease quantity"
               onClick={() => updateQuantity(line.id, line.quantity - 1)}
             >
-              âˆ’
+              <Minus size={14} strokeWidth={1.6} aria-hidden="true" />
             </button>
             <span aria-live="polite">{line.quantity}</span>
             <button
@@ -148,15 +175,15 @@ function CartLine({ line }) {
               aria-label="Increase quantity"
               onClick={() => updateQuantity(line.id, line.quantity + 1)}
             >
-              +
+              <Plus size={14} strokeWidth={1.6} aria-hidden="true" />
             </button>
           </div>
           <button type="button" className="shop-remove" onClick={() => removeItem(line.id)}>
+            <Trash2 size={14} strokeWidth={1.6} aria-hidden="true" />
             Remove
           </button>
         </div>
       </div>
-      <p className="shop-line__price">{formatMoney(line.unitPrice)}</p>
     </article>
   );
 }
@@ -369,7 +396,7 @@ export function CheckoutView() {
                   gap: 10,
                 }}
               >
-                <span aria-hidden="true">âš </span>
+                <span aria-hidden="true">⚠ </span>
                 <span>{formError}</span>
                 {!placing && (
                   <button
@@ -386,7 +413,7 @@ export function CheckoutView() {
                     }}
                     aria-label="Dismiss error"
                   >
-                    âœ•
+                    ✕
                   </button>
                 )}
               </div>
@@ -522,7 +549,7 @@ export function CheckoutView() {
                       <strong>{method.label}</strong>
                       <small>
                         {method.detail}
-                        {method.amount != null ? ` â€” â‚¹${method.amount}` : ""}
+                        {method.amount != null ? ` — ₹${method.amount}` : ""}
                       </small>
                     </span>
                   </label>
@@ -594,7 +621,7 @@ export function CheckoutView() {
           </div>
 
           <OrderSummary
-            primaryLabel={placing ? "Processingâ€¦" : "Place Order"}
+            primaryLabel={placing ? "Processing…" : "Place Order"}
             primaryDisabled={placing}
             onPrimary={onPlaceOrder}
             showContinue={false}
@@ -608,7 +635,7 @@ export function CheckoutView() {
               disabled={placing}
               onClick={onPlaceOrder}
             >
-              {placing ? "Processingâ€¦" : "Place Order"}
+              {placing ? "Processing…" : "Place Order"}
             </button>
           </div>
         </div>
@@ -617,7 +644,7 @@ export function CheckoutView() {
   );
 }
 
-/** Client-side success view â€” reads lastOrder from localStorage. Used as fallback. */
+/** Client-side success view — reads lastOrder from localStorage. Used as fallback. */
 export function SuccessView() {
   const markRef = useRef(null);
   const { lastOrder, hydrated } = useCart();
@@ -695,7 +722,7 @@ export function SuccessView() {
 }
 
 /**
- * Server-rendered success view â€” receives a serialized order object from the
+ * Server-rendered success view — receives a serialized order object from the
  * server component (app/order/success/[orderId]/page.js). No localStorage needed.
  */
 export function ServerSuccessView({ order }) {
@@ -745,9 +772,11 @@ export function ServerSuccessView({ order }) {
 
   const address = order?.shippingAddress || {};
   const items = Array.isArray(order?.items) ? order.items : [];
+  const isOnline = order?.paymentMethod === "online";
+  const isPaid = order?.paymentStatus === "paid";
 
   function fmt(amount) {
-    if (amount == null) return "â€”";
+    if (amount == null) return "—";
     try {
       return new Intl.NumberFormat("en-IN", {
         style: "currency",
@@ -755,9 +784,21 @@ export function ServerSuccessView({ order }) {
         maximumFractionDigits: 0,
       }).format(Number(amount));
     } catch {
-      return `â‚¹${Number(amount).toLocaleString("en-IN")}`;
+      return `₹${Number(amount).toLocaleString("en-IN")}`;
     }
   }
+
+  function getPaymentStatusLabel() {
+    if (!isOnline) {
+      return { label: `Pay ${fmt(order?.total)} on delivery`, status: "cod" };
+    }
+    if (isPaid) {
+      return { label: "Payment received", status: "paid" };
+    }
+    return { label: "Payment confirmation pending — we'll email you once it's confirmed.", status: "pending" };
+  }
+
+  const paymentStatus = getPaymentStatusLabel();
 
   return (
     <div className="shop-flow">
@@ -771,93 +812,115 @@ export function ServerSuccessView({ order }) {
           </p>
         </header>
 
-        <div className="shop-success" style={{ maxWidth: 640, margin: "0 auto" }}>
-          <div className="shop-success__mark" ref={markRef} aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <path d="M5 13.5 9.5 18 19 7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+        <div className="order-confirmation" style={{ maxWidth: 720, margin: "0 auto" }}>
+          <div className="order-confirmation__hero">
+            <div className="order-confirmation__mark" ref={markRef} aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <path d="M5 13.5 9.5 18 19 7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <p className="order-confirmation__number">Order {order?.orderNumber}</p>
+            <p className={`order-confirmation__payment-status order-confirmation__payment-status--${paymentStatus.status}`}>
+              {paymentStatus.label}
+            </p>
           </div>
 
-          <p className="shop-success__number">Order {order?.orderNumber}</p>
-
           {/* Order items */}
-          {items.length > 0 ? (
-            <div className="shop-card" style={{ marginTop: 32, width: "100%" }}>
-              <h2 className="shop-section__title" style={{ marginBottom: 16 }}>Items Ordered</h2>
-              {items.map((item, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    gap: 16,
-                    padding: "12px 0",
-                    borderBottom: i < items.length - 1 ? "1px solid var(--color-border, #e5e5e5)" : "none",
-                    alignItems: "center",
-                  }}
-                >
-                  {item.image?.src ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.image.src}
-                      alt={item.product?.name || ""}
-                      style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 4, flexShrink: 0 }}
-                    />
-                  ) : (
-                    <div style={{ width: 64, height: 64, background: "var(--color-surface, #f5f5f5)", borderRadius: 4, flexShrink: 0 }} />
-                  )}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: "0 0 4px", fontWeight: 600, fontSize: "0.9375rem" }}>
-                      {item.product?.name}
-                    </p>
-                    <p style={{ margin: 0, fontSize: "0.8125rem", opacity: 0.7 }}>
-                      {item.color?.name}{item.size ? ` Â· ${item.size}` : ""}
-                      {" Â· "}Qty {item.quantity}
-                    </p>
-                  </div>
-                  <p style={{ margin: 0, fontWeight: 600, whiteSpace: "nowrap" }}>
-                    {fmt(item.lineTotal)}
-                  </p>
-                </div>
-              ))}
+          {items.length > 0 && (
+            <section className="order-confirmation__section">
+              <h2 className="order-confirmation__section-title">Items Ordered</h2>
+              <div className="order-confirmation__items">
+                {items.map((item, i) => (
+                  <article key={i} className="order-confirmation__item">
+                    <div className="order-confirmation__item-media">
+                      {item.image?.src ? (
+                        <img
+                          src={item.image.src}
+                          alt={item.product?.name || ""}
+                          width={72}
+                          height={72}
+                        />
+                      ) : (
+                        <div className="order-confirmation__item-placeholder" aria-hidden="true" />
+                      )}
+                    </div>
+                    <div className="order-confirmation__item-details">
+                      <p className="order-confirmation__item-name">{item.product?.name}</p>
+                      <p className="order-confirmation__item-meta">
+                        {item.color?.name}{item.size ? ` · ${item.size}` : ""}
+                        {" · "}Qty {item.quantity}
+                      </p>
+                    </div>
+                    <p className="order-confirmation__item-total">{fmt(item.lineTotal)}</p>
+                  </article>
+                ))}
+              </div>
 
               {/* Totals */}
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: "2px solid var(--color-border, #e5e5e5)" }}>
-                <div className="shop-summary__row">
+              <div className="order-confirmation__totals">
+                <div className="order-confirmation__total-row">
                   <span>Subtotal</span>
                   <span>{fmt(order?.subtotal)}</span>
                 </div>
-                <div className="shop-summary__row">
+                <div className="order-confirmation__total-row">
                   <span>Shipping</span>
                   <span>{fmt(order?.shipping)}</span>
                 </div>
-                {Number(order?.discounts) > 0 ? (
-                  <div className="shop-summary__row">
+                {Number(order?.discounts) > 0 && (
+                  <div className="order-confirmation__total-row order-confirmation__total-row--discount">
                     <span>Discount {order?.couponCode ? `(${order.couponCode})` : ""}</span>
                     <span>-{fmt(order?.discounts)}</span>
                   </div>
-                ) : null}
-                <div className="shop-summary__row shop-summary__row--total">
+                )}
+                <div className="order-confirmation__total-row order-confirmation__total-row--grand">
                   <span>Total</span>
                   <span>{fmt(order?.total)}</span>
                 </div>
               </div>
-            </div>
-          ) : null}
+            </section>
+          )}
 
           {/* Shipping address */}
-          <div className="shop-card" style={{ marginTop: 16, width: "100%", textAlign: "left" }}>
-            <h2 className="shop-section__title" style={{ marginBottom: 12 }}>Shipping Address</h2>
-            <p style={{ margin: "0 0 4px", fontSize: "0.9rem" }}>{address.fullName}</p>
-            <p style={{ margin: "0 0 4px", fontSize: "0.9rem" }}>
-              {address.line1}{address.line2 ? `, ${address.line2}` : ""}
-            </p>
-            <p style={{ margin: "0 0 4px", fontSize: "0.9rem" }}>
-              {address.city}{address.state ? `, ${address.state}` : ""} {address.postalCode}
-            </p>
-            <p style={{ margin: 0, fontSize: "0.9rem" }}>{address.country || "India"}</p>
-          </div>
+          <section className="order-confirmation__section">
+            <h2 className="order-confirmation__section-title">Shipping Address</h2>
+            <address className="order-confirmation__address">
+              <p>{address.fullName}</p>
+              <p>{address.line1}{address.line2 ? `, ${address.line2}` : ""}</p>
+              <p>{address.city}{address.state ? `, ${address.state}` : ""} {address.postalCode}</p>
+              <p>{address.country || "India"}</p>
+            </address>
+          </section>
 
-          <div className="shop-success__actions" style={{ marginTop: 24 }}>
+          {/* Next steps */}
+          <section className="order-confirmation__section order-confirmation__next-steps">
+            <h2 className="order-confirmation__section-title">What happens next?</h2>
+            <ul className="order-confirmation__steps">
+              {!isOnline && (
+                <li>
+                  <span className="order-confirmation__step-number">1</span>
+                  <div>
+                    <strong>Order confirmed</strong> — We've received your order and will begin processing it.
+                  </div>
+                </li>
+              )}
+              <li>
+                <span className="order-confirmation__step-number">{!isOnline ? 2 : 1}</span>
+                <div>
+                  <strong>Processing & dispatch</strong> — Your items are being prepared for shipment.
+                  You'll receive tracking details via email & SMS once dispatched.
+                </div>
+              </li>
+              <li>
+                <span className="order-confirmation__step-number">{!isOnline ? 3 : 2}</span>
+                <div>
+                  <strong>Delivery</strong> — Standard delivery takes 4–6 business days.
+                  Express delivery (if selected) takes 1–2 business days.
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <div className="order-confirmation__actions">
             <Link href="/#shop" className="shop-btn shop-btn--primary">
               Continue Shopping
             </Link>

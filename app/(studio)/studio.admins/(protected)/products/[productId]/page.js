@@ -11,23 +11,11 @@ import { toast } from "@/components/toast/toast-store";
 
 const PRODUCTS_PATH = "/studio.admins/products";
 
-const EDITOR_TABS = [
-  { id: "general", label: "General" },
-  { id: "variants", label: "Variants" },
-  { id: "pricing", label: "Pricing" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "draft", label: "Draft" },
-  { value: "active", label: "Active" },
-  { value: "archived", label: "Archived" },
-];
-
 const EMPTY_GENERAL = {
   name: "",
   slug: "",
   category: "",
-  status: "active",
+  status: "draft",
   featured: false,
   description: "",
   story: "",
@@ -41,18 +29,39 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
+function SectionHeading({ title, copy, done, badge }) {
+  return (
+    <header className="studio-section__header">
+      <div className="studio-section__heading">
+        <span
+          className="studio-section__check"
+          data-done={done ? "true" : "false"}
+          aria-hidden="true"
+        >
+          {done ? "✓" : "○"}
+        </span>
+        <div>
+          <h2 className="studio-section__title">{title}</h2>
+          <p className="studio-section__copy">{copy}</p>
+        </div>
+      </div>
+      {badge}
+    </header>
+  );
+}
+
 export default function StudioProductEditorPage() {
   const params = useParams();
   const router = useRouter();
   const productId = String(params?.productId || "new");
   const isNew = productId === "new";
 
-  const [tab, setTab] = useState("general");
   const [general, setGeneral] = useState(EMPTY_GENERAL);
   const [colors, setColors] = useState([]);
   const [pricing, setPricing] = useState(createEmptyPricing());
   const [selectedColorId, setSelectedColorId] = useState(null);
   const [slugTouched, setSlugTouched] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [loading, setLoading] = useState(!isNew);
   const [categories, setCategories] = useState([]);
@@ -63,6 +72,19 @@ export default function StudioProductEditorPage() {
     if (isNew) return "New Product";
     return general.name.trim() || "Edit Product";
   }, [general.name, isNew]);
+
+  const isVisible = general.status === "active";
+
+  const basicsDone = general.name.trim() !== "";
+  const colorsDone = colors.length > 0 && colors.every((color) => color.name.trim() !== "");
+  const pricingDone = String(pricing.globalPrice ?? "").trim() !== "";
+  const doneCount = [basicsDone, colorsDone, pricingDone].filter(Boolean).length;
+
+  const progress = [
+    { id: "basics", label: "Product Basics", done: basicsDone },
+    { id: "colors", label: "Colors & Sizes", done: colorsDone },
+    { id: "pricing", label: "Pricing", done: pricingDone },
+  ];
 
   useEffect(() => {
     async function loadCategories() {
@@ -104,13 +126,33 @@ export default function StudioProductEditorPage() {
             name: product.generalInformation?.name || product.name || "",
             slug: product.slug || "",
             category: product.category || "",
-            status: product.status || "draft",
+            status: product.status === "active" ? "active" : "draft",
             featured: Boolean(product.featured),
             description: product.generalInformation?.description || "",
             story: product.story?.lead || product.story || "",
           });
           setColors(Array.isArray(product.colors) ? product.colors : []);
-          setPricing({ ...createEmptyPricing(), ...(product.pricing || {}) });
+          const loadedPricing = {
+            ...createEmptyPricing(),
+            globalPrice:
+              product.pricing?.basePrice ??
+              product.pricing?.globalPrice ??
+              product.price ??
+              "",
+            comparePrice:
+              product.pricing?.comparePrice ??
+              product.comparePrice ??
+              "",
+          };
+          const loadedColorPrices = {};
+          for (const c of Array.isArray(product.colors) ? product.colors : []) {
+            if (c?.id && c.price != null) loadedColorPrices[c.id] = String(c.price);
+          }
+          if (Object.keys(loadedColorPrices).length > 0) {
+            loadedPricing.colorPrices = loadedColorPrices;
+            loadedPricing.differentPriceForColors = true;
+          }
+          setPricing(loadedPricing);
         }
       } catch {
         if (mountedRef.current) {
@@ -157,7 +199,6 @@ export default function StudioProductEditorPage() {
     const next = createEmptyColor();
     setColors((current) => [...current, next]);
     setSelectedColorId(next.id);
-    setTab("variants");
     markDirty();
   }
 
@@ -179,8 +220,8 @@ export default function StudioProductEditorPage() {
     setPricing(createEmptyPricing());
     setSelectedColorId(null);
     setSlugTouched(false);
+    setShowAdvanced(false);
     setDirty(false);
-    setTab("general");
   }
 
   async function handleDelete() {
@@ -203,16 +244,48 @@ export default function StudioProductEditorPage() {
   async function handleSave(event) {
     event.preventDefault();
 
+    // Resolve price from whichever key the pricing state is currently shaped
+    // with (globalPrice = panel, basePrice = API contract). Guard against a
+    // future state-shape drift silently dropping the price from the payload.
+    const priceSource =
+      pricing?.globalPrice ?? pricing?.basePrice ?? pricing?.price;
+    const compareSource =
+      pricing?.comparePrice ?? pricing?.compareAtPrice;
+    const parsedPrice = Number.parseFloat(priceSource);
+    const parsedCompare = Number.parseFloat(compareSource);
+    const resolvedPrice = priceSource === "" || priceSource == null || Number.isNaN(parsedPrice) ? null : parsedPrice;
+    const resolvedComparePrice = compareSource === "" || compareSource == null || Number.isNaN(parsedCompare) ? null : parsedCompare;
+
+    // The single "Visible on website" toggle maps to the product status. All
+    // colors follow the same visibility so staff manage one switch, not three.
+    const productStatus = general.status === "active" ? "active" : "draft";
+
+    // Apply per-color price overrides, otherwise fall back to the global price.
+    const resolvedColors = colors.map((color) => {
+      const overrideSource = pricing.colorPrices?.[color.id];
+      const parsedOverride = Number.parseFloat(overrideSource);
+      const override =
+        pricing.differentPriceForColors && overrideSource != null && !Number.isNaN(parsedOverride)
+          ? parsedOverride
+          : null;
+      return {
+        ...color,
+        status: productStatus,
+        price: override != null ? override : resolvedPrice,
+        comparePrice: resolvedComparePrice,
+      };
+    });
+
     const payload = {
       id: isNew ? undefined : productId,
       name: general.name.trim(),
       slug: slugify(general.slug || general.name),
       category: general.category || categories[0]?.name || "Uncategorized",
       categoryId: general.category || categories[0]?.slug || "uncategorized",
-      status: general.status,
+      status: productStatus,
       featured: Boolean(general.featured),
-      price: pricing?.basePrice || null,
-      comparePrice: pricing?.comparePrice || null,
+      price: resolvedPrice,
+      comparePrice: resolvedComparePrice,
       generalInformation: {
         name: general.name.trim(),
         shortName: general.name.trim(),
@@ -223,8 +296,11 @@ export default function StudioProductEditorPage() {
         lead: general.story.trim(),
         body: general.description.trim(),
       },
-      colors,
-      pricing,
+      colors: resolvedColors,
+      pricing: {
+        basePrice: resolvedPrice,
+        comparePrice: resolvedComparePrice,
+      },
     };
 
     const response = await fetch("/api/admin/products", {
@@ -249,7 +325,7 @@ export default function StudioProductEditorPage() {
         setPricing(createEmptyPricing());
         setSelectedColorId(null);
         setSlugTouched(false);
-        setTab("general");
+        setShowAdvanced(false);
       }
     } else {
       let message = "Unable to save product.";
@@ -271,7 +347,7 @@ export default function StudioProductEditorPage() {
           <p className="studio-main__eyebrow">Beyond Buttons Studio</p>
           <h1 className="studio-main__title">{title}</h1>
           <p className="studio-main__copy">
-            Edit product data and save it to the live storefront catalog.
+            Everything on one page — fill the sections below and save.
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
@@ -319,29 +395,22 @@ export default function StudioProductEditorPage() {
         </div>
       ) : null}
 
-      <div className="studio-tabs" role="tablist" aria-label="Product editor sections">
-        {EDITOR_TABS.map((item) => {
-          const selected = tab === item.id;
-          return (
-            <button
+      <div className="studio-progress" role="status" aria-live="polite">
+        <span className="studio-progress__label">
+          {doneCount} of {progress.length} sections complete
+        </span>
+        <ol className="studio-progress__list">
+          {progress.map((item) => (
+            <li
               key={item.id}
-              type="button"
-              role="tab"
-              id={`editor-tab-${item.id}`}
-              className="studio-tabs__item"
-              aria-selected={selected}
-              aria-controls={`editor-panel-${item.id}`}
-              tabIndex={selected ? 0 : -1}
-              data-active={selected ? "true" : "false"}
-              onClick={() => {
-                setTab(item.id);
-                if (item.id !== "variants") setSelectedColorId(null);
-              }}
+              className="studio-progress__item"
+              data-done={item.done ? "true" : "false"}
             >
+              <span aria-hidden="true">{item.done ? "✓" : "○"}</span>
               {item.label}
-            </button>
-          );
-        })}
+            </li>
+          ))}
+        </ol>
       </div>
 
       {loading ? (
@@ -350,138 +419,146 @@ export default function StudioProductEditorPage() {
         </div>
       ) : (
         <form className="studio-editor__form" onSubmit={handleSave} noValidate>
-          {tab === "general" ? (
-            <section
-              className="studio-section"
-              data-section="general"
-              id="editor-panel-general"
-              role="tabpanel"
-              aria-labelledby="editor-tab-general"
-            >
-              <header className="studio-section__header">
-                <h2 id="product-general-title" className="studio-section__title">
-                  General
-                </h2>
-                <p className="studio-section__copy">
-                  Core identity and publishing fields for the product record.
-                </p>
-              </header>
+          <section className="studio-section" data-section="general" id="editor-panel-general">
+            <SectionHeading
+              title="Product Basics"
+              copy="Name, category, and whether the product is visible on the website."
+              done={basicsDone}
+            />
 
-              <div className="studio-section__fields">
-                <label className="studio-field">
-                  <span className="studio-field__label">Product Name</span>
-                  <input
-                    name="name"
-                    type="text"
-                    value={general.name}
-                    onChange={(event) => handleNameChange(event.target.value)}
-                    placeholder="Product name"
-                    autoComplete="off"
-                  />
-                </label>
+            <div className="studio-section__fields">
+              <label className="studio-field">
+                <span className="studio-field__label">Product Name</span>
+                <input
+                  name="name"
+                  type="text"
+                  value={general.name}
+                  onChange={(event) => handleNameChange(event.target.value)}
+                  placeholder="e.g. Charcoal Oversized Shirt"
+                  autoComplete="off"
+                />
+                <span className="studio-field__hint">
+                  The web address (slug) and size SKUs are created automatically from this name.
+                </span>
+              </label>
 
-                <label className="studio-field">
-                  <span className="studio-field__label">Slug</span>
-                  <input
-                    name="slug"
-                    type="text"
-                    value={general.slug}
-                    onChange={(event) => {
-                      setSlugTouched(true);
-                      updateField("slug", slugify(event.target.value));
-                    }}
-                    placeholder="product-slug"
-                    autoComplete="off"
-                    spellCheck={false}
-                  />
-                </label>
-
-                <label className="studio-field">
-                  <span className="studio-field__label">Category</span>
-                  <select
-                    name="category"
-                    value={general.category}
-                    onChange={(event) => updateField("category", event.target.value)}
-                  >
-                    <option value="">Select category</option>
-                    {categories.map((category) => (
-                      <option key={category.id || category.slug} value={category.name}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="studio-field">
-                  <span className="studio-field__label">Status</span>
-                  <select
-                    name="status"
-                    value={general.status}
-                    onChange={(event) => updateField("status", event.target.value)}
-                  >
-                    {STATUS_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="studio-field studio-field--check">
-                  <input
-                    name="featured"
-                    type="checkbox"
-                    checked={general.featured}
-                    onChange={(event) => updateField("featured", event.target.checked)}
-                  />
-                  <span>
-                    <span className="studio-field__label">Featured</span>
-                    <span className="studio-field__hint">
-                      Highlight the product across storefront surfaces.
-                    </span>
+              <label className="studio-field studio-field--check studio-field--full">
+                <input
+                  name="visible"
+                  type="checkbox"
+                  checked={isVisible}
+                  onChange={(event) =>
+                    updateField("status", event.target.checked ? "active" : "draft")
+                  }
+                />
+                <span>
+                  <span className="studio-field__label">Visible on website</span>
+                  <span className="studio-field__hint">
+                    Yes = shown on the site. No = hidden (kept as a draft). This controls
+                    the product and all its colors.
                   </span>
-                </label>
+                </span>
+              </label>
 
-                <label className="studio-field studio-field--full">
-                  <span className="studio-field__label">Description</span>
-                  <textarea
-                    name="description"
-                    rows={4}
-                    value={general.description}
-                    onChange={(event) => updateField("description", event.target.value)}
-                    placeholder="Product description"
-                  />
-                </label>
+              <label className="studio-field">
+                <span className="studio-field__label">Category</span>
+                <select
+                  name="category"
+                  value={general.category}
+                  onChange={(event) => updateField("category", event.target.value)}
+                >
+                  <option value="">Select category</option>
+                  {categories.map((category) => (
+                    <option key={category.id || category.slug} value={category.name}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-                <label className="studio-field studio-field--full">
-                  <span className="studio-field__label">Story</span>
-                  <textarea
-                    name="story"
-                    rows={8}
-                    value={general.story}
-                    onChange={(event) => updateField("story", event.target.value)}
-                    placeholder="Product story and craft narrative"
-                  />
-                </label>
+              <label className="studio-field studio-field--check">
+                <input
+                  name="featured"
+                  type="checkbox"
+                  checked={general.featured}
+                  onChange={(event) => updateField("featured", event.target.checked)}
+                />
+                <span>
+                  <span className="studio-field__label">Featured</span>
+                  <span className="studio-field__hint">
+                    Highlight the product across storefront surfaces.
+                  </span>
+                </span>
+              </label>
+
+              <label className="studio-field studio-field--full">
+                <span className="studio-field__label">Description</span>
+                <textarea
+                  name="description"
+                  rows={4}
+                  value={general.description}
+                  onChange={(event) => updateField("description", event.target.value)}
+                  placeholder="Product description"
+                />
+              </label>
+
+              <label className="studio-field studio-field--full">
+                <span className="studio-field__label">Story</span>
+                <textarea
+                  name="story"
+                  rows={8}
+                  value={general.story}
+                  onChange={(event) => updateField("story", event.target.value)}
+                  placeholder="Product story and craft narrative"
+                />
+              </label>
+
+              <div className="studio-field studio-field--full">
+                <button
+                  type="button"
+                  className="studio-btn studio-btn--ghost"
+                  onClick={() => setShowAdvanced((value) => !value)}
+                  aria-expanded={showAdvanced}
+                >
+                  {showAdvanced ? "Hide" : "Show"} advanced options
+                </button>
+                {showAdvanced ? (
+                  <div className="studio-field__advanced">
+                    <label className="studio-field">
+                      <span className="studio-field__label">Slug (web address)</span>
+                      <input
+                        name="slug"
+                        type="text"
+                        value={general.slug}
+                        onChange={(event) => {
+                          setSlugTouched(true);
+                          updateField("slug", slugify(event.target.value));
+                        }}
+                        placeholder="product-slug"
+                        autoComplete="off"
+                        spellCheck={false}
+                      />
+                      <span className="studio-field__hint">
+                        Auto-generated from the product name. Edit only if you need a
+                        custom link.
+                      </span>
+                    </label>
+                  </div>
+                ) : null}
               </div>
-            </section>
-          ) : null}
-
-          {tab === "variants" ? (
-            <div id="editor-panel-variants" role="tabpanel" aria-labelledby="editor-tab-variants">
-              <VariantsPanel
-                colors={colors}
-                selectedColorId={selectedColorId}
-                onAddColor={handleAddColor}
-                onSelectColor={setSelectedColorId}
-                onUpdateColor={handleUpdateColor}
-              />
             </div>
-          ) : null}
+          </section>
 
-          {tab === "pricing" ? (
-            <PricingPanel pricing={pricing} colors={colors} onChange={handlePricingChange} />
-          ) : null}
+          <VariantsPanel
+            colors={colors}
+            selectedColorId={selectedColorId}
+            onAddColor={handleAddColor}
+            onSelectColor={setSelectedColorId}
+            onUpdateColor={handleUpdateColor}
+            productName={general.name}
+          />
+
+          <PricingPanel pricing={pricing} colors={colors} onChange={handlePricingChange} />
 
           <div className="studio-editor__bar" data-dirty={dirty ? "true" : "false"}>
             <p className="studio-editor__bar-note">

@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/session";
 import { bootstrapDatabase } from "@/lib/database/register";
 import { OrderModel } from "@/lib/database/models";
+import { restoreOrderStockOnce } from "@/lib/shop/stock";
 import { shiprocket, ShiprocketError } from "@/lib/shiprocket";
 
 export async function POST(request) {
@@ -60,6 +61,8 @@ export async function POST(request) {
     }
 
     const result = await shiprocket.cancelShipment(order.shiprocketShipmentId, reason);
+
+    await restoreOrderStockOnce(orderId, "shiprocket_cancel");
 
     const updatedOrder = await OrderModel.findOneAndUpdate(
       { id: orderId },

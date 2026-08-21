@@ -2,18 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, ChevronDown, Filter, Shirt, X } from "lucide-react";
+import { ChevronDown, Filter, Shirt, X } from "lucide-react";
+
+import ProductCard from "@/components/product/ProductCard";
 
 import "./category.css";
-
-function formatMoney(value) {
-  const amount = Number(value || 0);
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 const SORTS = [
   { id: "newest", label: "Newest" },
@@ -21,7 +14,7 @@ const SORTS = [
   { id: "price-desc", label: "Price: High to Low" },
 ];
 
-export default function CategoryCatalog({ category, products }) {
+export default function CategoryCatalog({ products }) {
   const [sort, setSort] = useState("newest");
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState([]);
@@ -203,56 +196,9 @@ export default function CategoryCatalog({ category, products }) {
         </div>
       ) : (
         <div className="category-catalog__grid">
-          {visible.map((product) => {
-            const media = product.gallery?.[0]?.src;
-            const swatch = product.colors?.find((color) => color.default) || product.colors?.[0];
-            const price = Number(product.price || 0);
-            const comparePrice = Number(product.comparePrice || 0);
-
-            return (
-              <article className="catalog-card" key={product.id || product.slug}>
-                <Link href={`/product/${product.slug}`} className="catalog-card__media" aria-label={`View ${product.name}`}>
-                  {media ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={media} alt={product.name} loading="lazy" />
-                  ) : (
-                    <div
-                      className="catalog-card__placeholder"
-                      style={{
-                        background: `radial-gradient(ellipse 62% 48% at 50% 40%, ${
-                          swatch?.hex || "var(--gold)"
-                        }22, transparent 72%), var(--surface-frame)`,
-                      }}
-                    >
-                      <span>Beyond Buttons</span>
-                    </div>
-                  )}
-                  <span className="catalog-card__hover">
-                    <ArrowUpRight size={16} strokeWidth={1.5} aria-hidden="true" />
-                    View Details
-                  </span>
-                </Link>
-
-                <div className="catalog-card__body">
-                  <div className="catalog-card__meta">
-                    <span>{product.category || category.name}</span>
-                    <span>{product.colors?.length || 1} colors</span>
-                  </div>
-
-                  <h3>
-                    <Link href={`/product/${product.slug}`}>{product.name}</Link>
-                  </h3>
-
-                  {price > 0 ? (
-                    <p className="catalog-card__price">
-                      <strong>{formatMoney(price)}</strong>
-                      {comparePrice > price ? <s>{formatMoney(comparePrice)}</s> : null}
-                    </p>
-                  ) : null}
-                </div>
-              </article>
-            );
-          })}
+          {visible.map((product, index) => (
+            <ProductCard key={product.id || product.slug} product={product} index={index} />
+          ))}
         </div>
       )}
     </div>

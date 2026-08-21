@@ -132,7 +132,11 @@
         "title": "Company",
         "links": [
           {
-            "label": "Our Story",
+            "label": "New Arrivals",
+            "href": "/shop"
+          },
+          {
+            "label": "About",
             "href": "/about"
           },
           {
@@ -140,8 +144,8 @@
             "href": "/contact"
           },
           {
-            "label": "Shipping & Returns",
-            "href": "/shipping"
+            "label": "Our Story",
+            "href": "/about"
           }
         ]
       },

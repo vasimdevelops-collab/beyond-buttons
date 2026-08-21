@@ -13,7 +13,7 @@ const STUDIO_PATHS = Object.freeze({
   products: "/studio.admins/products",
   categories: "/studio.admins/categories",
   media: "/studio.admins/media",
-  homepage: "/studio.admins/homepage",
+  heroSlides: "/studio.admins/hero-slider",
   orders: "/studio.admins/orders",
   customers: "/studio.admins/customers",
   contacts: "/studio.admins/contacts",
@@ -28,7 +28,7 @@ const STUDIO_NAV = [
   { label: "Products", href: STUDIO_PATHS.products },
   { label: "Categories", href: STUDIO_PATHS.categories },
   { label: "Media Library", href: STUDIO_PATHS.media },
-  { label: "Homepage", href: STUDIO_PATHS.homepage },
+  { label: "Hero Slider", href: STUDIO_PATHS.heroSlides },
   { label: "Orders", href: STUDIO_PATHS.orders },
   { label: "Customers", href: STUDIO_PATHS.customers },
   { label: "Contacts", href: STUDIO_PATHS.contacts },
@@ -36,7 +36,7 @@ const STUDIO_NAV = [
   { label: "Theme", href: STUDIO_PATHS.theme },
   { label: "Settings", href: STUDIO_PATHS.settings },
   { label: "Analytics", href: STUDIO_PATHS.analytics },
-  { label: "Admin", href: STUDIO_PATHS.admin },
+  { label: "Change Admin Password", href: STUDIO_PATHS.admin },
 ];
 
 function resolveActiveNav(pathname) {
@@ -49,8 +49,8 @@ function resolveActiveNav(pathname) {
   if (pathname === STUDIO_PATHS.media || pathname.startsWith(`${STUDIO_PATHS.media}/`)) {
     return "Media Library";
   }
-  if (pathname === STUDIO_PATHS.homepage || pathname.startsWith(`${STUDIO_PATHS.homepage}/`)) {
-    return "Homepage";
+  if (pathname === STUDIO_PATHS.heroSlides || pathname.startsWith(`${STUDIO_PATHS.heroSlides}/`)) {
+    return "Hero Slider";
   }
   if (pathname === STUDIO_PATHS.orders || pathname.startsWith(`${STUDIO_PATHS.orders}/`)) {
     return "Orders";
@@ -71,7 +71,7 @@ function resolveActiveNav(pathname) {
     return "Settings";
   }
   if (pathname === STUDIO_PATHS.admin || pathname.startsWith(`${STUDIO_PATHS.admin}/`)) {
-    return "Admin";
+    return "Change Admin Password";
   }
   if (pathname === STUDIO_PATHS.analytics || pathname.startsWith(`${STUDIO_PATHS.analytics}/`)) {
     return "Analytics";

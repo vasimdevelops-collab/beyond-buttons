@@ -126,6 +126,27 @@
   color: var(--gold);
 }
 
+.sitemap-page__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.sitemap-page__list a {
+  display: inline-flex;
+  color: var(--text-muted-strong);
+  font: 400 15px/1.5 var(--font-body);
+  text-decoration: none;
+  transition: color 280ms ease;
+}
+
+.sitemap-page__list a:hover,
+.sitemap-page__list a:focus-visible {
+  color: var(--goldLight);
+}
+
 .about-page__story {
   display: grid;
   gap: 18px;
@@ -279,6 +300,45 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.wishlist-product-card:hover .wishlist-product-card__media img {
+  transform: scale(1.04);
+}
+
+.wishlist-product-card__media {
+  position: relative;
+}
+
+.wishlist-product-card__heart {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(250, 248, 244, 0.35);
+  border-radius: 50%;
+  background: rgba(10, 10, 10, 0.55);
+  color: #faf8f4;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: color 0.25s ease, border-color 0.25s ease, transform 0.25s ease, opacity 0.25s ease;
+  opacity: 0;
+}
+
+.wishlist-product-card:hover .wishlist-product-card__heart,
+.wishlist-product-card__heart:focus-visible {
+  opacity: 1;
+}
+
+.wishlist-product-card__heart:hover {
+  color: #c97d7d;
+  border-color: #c97d7d;
+  transform: scale(1.08);
 }
 
 .search-product-card__body,
@@ -286,8 +346,12 @@
   padding: 18px;
 }
 
-.search-product-card__body h3,
-.wishlist-product-card__body h3 {
+.wishlist-product-card__body {
+  display: grid;
+  gap: 8px;
+}
+
+.search-product-card__body h3 {
   margin: 0;
   color: var(--offWhite);
   font-family: var(--font-heading);
@@ -295,8 +359,21 @@
   font-weight: 500;
 }
 
-.search-product-card__body p,
-.wishlist-product-card__body p {
+.wishlist-product-card__title {
+  margin: 0;
+  color: var(--offWhite);
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.wishlist-product-card__title:hover,
+.wishlist-product-card__title:focus-visible {
+  color: var(--goldLight);
+}
+
+.search-product-card__body p {
   margin: 12px 0 0;
   color: var(--text-muted);
   font: 400 14px/1.6 var(--font-body);
@@ -315,30 +392,57 @@
   text-transform: uppercase;
 }
 
-.wishlist-product-card__remove {
+.wishlist-product-card__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--text-muted);
+}
+
+.wishlist-product-card__price-row strong {
+  color: var(--offWhite);
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.wishlist-product-card__price-row span {
+  text-decoration: line-through;
+  opacity: 0.7;
+  font-size: 13px;
+}
+
+.wishlist-product-card__bag {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border: 1px solid var(--hairline);
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-top: 6px;
+  padding: 0 16px;
+  border: 1px solid var(--hairline-gold-strong);
   border-radius: 999px;
   background: transparent;
-  color: var(--text-muted);
-  font: 600 10px/1 var(--font-body);
+  color: var(--offWhite);
+  font: 600 11px/1 var(--font-body);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease;
 }
 
-.wishlist-product-card__remove:hover {
-  color: var(--color-error, #c0392b);
-  border-color: var(--color-error, #c0392b);
-  background: var(--color-error-bg, rgba(192, 57, 43, 0.06));
+.wishlist-product-card__bag:hover,
+.wishlist-product-card__bag:focus-visible {
+  background: var(--btn-primary-bg);
+  border-color: var(--btn-primary-border);
+  color: var(--btn-primary-text);
 }
 
 .wishlist-page__empty {
   padding: 24px 0;
+  display: grid;
+  gap: 18px;
+  justify-items: start;
   color: var(--text-muted);
   font: 400 15px/1.6 var(--font-body);
 }

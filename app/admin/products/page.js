@@ -47,7 +47,7 @@ export default function ProductsPage() {
       const productsData = await productsRes.json();
       const categoriesData = await categoriesRes.json();
 
-      setProducts(Array.isArray(productsData) ? productsData : []);
+      setProducts(Array.isArray(productsData) ? productsData : Array.isArray(productsData?.products) ? productsData.products : []);
       setCategories(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (error) {
       console.error("Failed to load data:", error);
