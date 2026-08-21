@@ -10,9 +10,11 @@ import Products from "@/components/home/Products";
 import BrandStory from "@/components/home/BrandStory";
 import VisionMission from "@/components/home/VisionMission";
 import WhyBeyond from "@/components/home/WhyBeyond";
+import Testimonials from "@/components/home/Testimonials";
 import "@/components/home/sections.css";
 import "@/components/home/brand-story.css";
 import "@/components/home/vision-mission.css";
+import "@/components/home/testimonials.css";
 
 const INTRO_SESSION_KEY = "bb-intro-complete";
 
@@ -33,6 +35,7 @@ function HomeShell() {
             caption: "The Beyond Standard",
           }}
         />
+        <Testimonials />
       </main>
       <SiteFooter />
     </>
