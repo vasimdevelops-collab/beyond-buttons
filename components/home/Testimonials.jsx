@@ -121,6 +121,9 @@ export default function Testimonials() {
 
   // GSAP entrance animation
   useEffect(() => {
+    const section = trackRef.current;
+    if (!section) return;
+
     const ctx = gsap.context(() => {
       gsap.from(".testimonial-card", {
         y: 40,
@@ -129,7 +132,7 @@ export default function Testimonials() {
         stagger: 0.15,
         ease: "power3.out",
         scrollTrigger: {
-          trigger: ".testimonials-section",
+          trigger: section,
           start: "top 85%",
           toggleActions: "play none none reverse",
         },
