@@ -1,7 +1,6 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
-import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -11,31 +10,38 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const TAGLINE =
-  "Our vision is the world's most considered solid-shirt brand. Our mission is simpler: make one thing brilliantly — the perfect solid shirt.";
+const MISSION = {
+  title: "Mission",
+  copy: "To make premium solid shirts accessible to everyone by combining timeless design, exceptional quality, and honest pricing. We exist to prove that simplicity is not ordinary—it is confidence, crafted for everyday life.",
+};
+
+const VISION = {
+  title: "Vision",
+  copy: "To become the world's most trusted solid shirt brand, redefining everyday fashion through simplicity, consistency, and affordability—making BEYOND BUTTONS™ the first name people think of whenever they choose a solid shirt.",
+};
 
 export default function VisionMission() {
   const sectionRef = useRef(null);
-  const lineRef = useRef(null);
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
-    const line = lineRef.current;
     if (!section) return undefined;
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const ctx = gsap.context(() => {
-      if (reducedMotion) {
-        gsap.set(line, { autoAlpha: 1 });
+      const cards = gsap.utils.toArray(".vm__card", section);
+      if (reducedMotion || cards.length === 0) {
+        if (cards.length > 0) gsap.set(cards, { autoAlpha: 1 });
         return;
       }
-      gsap.set(line, { autoAlpha: 0, y: 14 });
-      gsap.to(line, {
+      gsap.set(cards, { autoAlpha: 0, y: 14 });
+      gsap.to(cards, {
         autoAlpha: 1,
         y: 0,
         duration: 0.9,
         ease: "power3.out",
+        stagger: 0.12,
         scrollTrigger: { trigger: section, start: "top 82%" },
       });
     }, section);
@@ -50,19 +56,17 @@ export default function VisionMission() {
       id="vision-mission"
       aria-label="Vision and Mission"
     >
-      <div className="vm__backdrop" aria-hidden="true" />
       <div className="vm__container">
-        <p className="vm__eyebrow" ref={lineRef}>
-          <span aria-hidden="true" className="vm__dot" />
-          Vision &amp; Mission
-          <span aria-hidden="true" className="vm__dot" />
-        </p>
-        <p className="vm__tagline" ref={lineRef}>
-          {TAGLINE}
-        </p>
-        <Link className="vm__link" href="/about">
-          The full story
-        </Link>
+        <div className="vm__grid">
+          <article className="vm__card">
+            <h2 className="vm__card-title">{MISSION.title}</h2>
+            <p className="vm__card-copy">{MISSION.copy}</p>
+          </article>
+          <article className="vm__card">
+            <h2 className="vm__card-title">{VISION.title}</h2>
+            <p className="vm__card-copy">{VISION.copy}</p>
+          </article>
+        </div>
       </div>
     </section>
   );

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import Navbar from "@/components/layout/Navbar";
 import SearchResults from "./SearchResults";
@@ -42,20 +42,45 @@ function SearchSkeleton() {
   );
 }
 
+function SearchEmptyState() {
+  return (
+    <main className="category-catalog-page">
+      <div className="category-catalog-page__container">
+        <nav className="category-catalog-page__breadcrumb" aria-label="Breadcrumb">
+          <Link href="/">Home</Link>
+          <span aria-hidden="true">/</span>
+          <span>Search</span>
+        </nav>
+
+        <p className="category-catalog-page__eyebrow">Search</p>
+        <h1 className="category-catalog-page__title">Find your next favourite</h1>
+        <p className="category-catalog-page__tagline">
+          Use the search box in the header to look across our entire catalogue.
+        </p>
+
+        <div className="search-empty__actions">
+          <Link href="/shop" className="search-empty__cta">Browse the shop</Link>
+          <Link href="/track" className="search-empty__link">Track an order</Link>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 export default async function SearchPage({ searchParams }) {
   const { q } = await searchParams;
   const query = q || "";
 
-  if (!query.trim()) {
-    notFound();
-  }
-
   return (
     <>
       <Navbar />
-      <Suspense fallback={<SearchSkeleton />}>
-        <SearchResults query={query} />
-      </Suspense>
+      {query.trim() ? (
+        <Suspense fallback={<SearchSkeleton />}>
+          <SearchResults query={query} />
+        </Suspense>
+      ) : (
+        <SearchEmptyState />
+      )}
     </>
   );
 }
